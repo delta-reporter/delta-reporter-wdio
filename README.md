@@ -1,29 +1,38 @@
-# README #
+# Delta Reporter WebdriverIO Service #
 
-This README would normally document whatever steps are necessary to get your application up and running.
+This service is intended to send information to Delta Reporter
 
-### What is this repository for? ###
+### Installation ###
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+Installing this service is simple as:
 
-### How do I get set up? ###
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+```bash
+npm install wdio-delta-reporter-service --save-dev
+```
 
-### Contribution guidelines ###
+### Configuration ###
 
-* Writing tests
-* Code review
-* Other guidelines
 
-### Who do I talk to? ###
+```js
+const DeltaService = require('wdio-delta-reporter-service');
 
-* Repo owner or admin
-* Other community or team contact
+exports.config = {
+  // ...
+  services: [new DeltaService({
+      host: 'delta_host',
+      project: 'Project Name',
+      testType: 'Test Type',
+      job: {
+        "jenkinsHost": process.env.HOST,
+        "jobURL": process.env.BUILD_URL,
+        "name": process.env.JOB_NAME,
+      },
+      run: {
+        buildNumber: process.env.BUILD_NUMBER,
+        startedBy: process.env.BUILD_CAUSE_MANUALTRIGGER ? 'HUMAN' : 'SCHEDULER' // Actually could be "SCHEDULER", "UPSTREAM_JOB", "HUMAN"
+      }
+    })],
+  // ...
+}
+```
