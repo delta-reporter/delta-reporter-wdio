@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+      "typeRoots": ["./types"],
+      "baseUrl": ".",
+      "paths": {
+        "*": ["./*"],
+        "src/*": ["./src/*"],
+        "test/*": ["./test/*"],
+      },
+      "target": "es2018",
+      "module": "commonjs",
+      "outDir": "lib/",
+      "removeComments": true,
+      "moduleResolution": "node",
+      "types": ["@wdio/sync", "mocha", "node"]
+    },
+    "include": ["src/**/*", "test/**/*"],
+    "exclude": ["./node_modules"],
+    "compileOnSave": true
+}
