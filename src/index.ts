@@ -82,7 +82,8 @@ class DeltaService {
 
     var test_run = {
       test_type: this.options.testType,
-      launch_id: launchId
+      launch_id: launchId,
+      start_datetime: new Date()
     };
 
     var response = await this.createTestRun(test_run);
