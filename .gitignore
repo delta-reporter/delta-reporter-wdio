@@ -1,0 +1,4 @@
+node_modules
+.delta_service
+lib
+logs
