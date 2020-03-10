@@ -21,42 +21,42 @@ class DeltaService {
   }
 
   getLaunchById(id: number) {
-    const url = ['launch', id].join('/');
+    const url = ['api/v1/launch', id].join('/');
     return this.restClient.retrieve(url);
   }
 
   createLaunch(data: object) {
-    const url = ['launch'];
+    const url = ['api/v1/launch'];
     return this.restClient.create(url, data);
   }
 
   createTestRun(data: object) {
-    const url = ['test_run'];
+    const url = ['api/v1/test_run'];
     return this.restClient.create(url, data);
   }
 
   createTestSuiteHistory(data: object) {
-    const url = ['test_suite_history'];
+    const url = ['api/v1/test_suite_history'];
     return this.restClient.create(url, data);
   }
 
   createTestHistory(data: object) {
-    const url = ['test_history'];
+    const url = ['api/v1/test_history'];
     return this.restClient.create(url, data);
   }
 
   updateTestHistory(data: object) {
-    const url = ['test_history'];
+    const url = ['api/v1/test_history'];
     return this.restClient.update(url, data);
   }
 
   updateSuiteHistory(data: object) {
-    const url = ['test_suite_history'];
+    const url = ['api/v1/test_suite_history'];
     return this.restClient.update(url, data);
   }
 
   updateTestRun(data: object) {
-    const url = ['test_run'];
+    const url = ['api/v1/test_run'];
     return this.restClient.update(url, data);
   }
 
