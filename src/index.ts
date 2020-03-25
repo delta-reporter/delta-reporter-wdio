@@ -127,15 +127,15 @@ class DeltaService {
   async afterTest(test, context, { error, result, duration, passed, retries }) {
     const delta_test = JSON.parse(fs.readFileSync('./.delta_service/test.json'));
 
-    error = error ? String(error) : null;
-
     var test_history = {
       test_history_id: delta_test.test_history_id,
       end_datetime: new Date(),
       test_status: passed ? 'Passed' : 'Failed',
-      trace: error,
+      trace: error ? error.stack : null,
       file: test.file,
-      retries: test._retries
+      message: error ? error.message : null,
+      error_type: error ? String(error).split(':')[0] : null,
+      retries: test.retries
     };
     var response = await this.updateTestHistory(test_history);
     log.info(response);
