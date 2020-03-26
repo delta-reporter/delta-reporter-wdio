@@ -98,7 +98,8 @@ class DeltaService {
       name: suite.title,
       test_type: this.options.testType,
       start_datetime: new Date(),
-      test_run_id: testRun.id
+      test_run_id: testRun.id,
+      project: this.options.project
     };
 
     var response = await this.createTestSuiteHistory(test_run_suite);
@@ -114,7 +115,8 @@ class DeltaService {
       name: test.title,
       start_datetime: new Date(),
       test_suite_id: testSuite.test_suite_id,
-      test_run_id: testRun.id
+      test_run_id: testRun.id,
+      test_suite_history_id: testSuite.test_suite_history_id
     };
 
     var response = await this.createTestHistory(test_history);
@@ -129,12 +131,11 @@ class DeltaService {
       test_history_id: delta_test.test_history_id,
       end_datetime: new Date(),
       test_status: passed ? 'Passed' : 'Failed',
-      data: {
-        duration: duration / 1000,
-        error: error,
-        file: test.file,
-        retries: test._retries
-      }
+      trace: error ? error.stack : null,
+      file: test.file,
+      message: error ? error.message : null,
+      error_type: error ? String(error).split(':')[0] : null,
+      retries: test.retries
     };
     var response = await this.updateTestHistory(test_history);
     log.info(response);

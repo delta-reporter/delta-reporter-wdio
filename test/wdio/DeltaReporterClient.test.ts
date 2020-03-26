@@ -1,12 +1,11 @@
 import { expect } from 'chai';
 
 describe('Basic validations', function() {
-  this.retries(1);
+  // this.retries(1);
 
   it('Should check that the page is loaded', () => {
     browser.url('http://the-internet.herokuapp.com/');
   });
-
 
   it('Should check that the nested frames page is loaded', () => {
     browser.url('http://the-internet.herokuapp.com/nested_frames');
@@ -22,4 +21,4 @@ describe('Basic validations', function() {
   it('Should check that the floating menu page is loaded', () => {
     browser.url('http://the-internet.herokuapp.com/floating_menu');
   });
-})
+});
