@@ -30,7 +30,7 @@ exports.config = {
     [
       new DeltaService({
         host: 'http://localhost:5001',
-        project: 'Delta Reporter Demo',
+        project: 'Delta Reporter',
         testType: 'End to End',
         job: {
           jenkinsHost: process.env.HOST,
