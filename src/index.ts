@@ -6,12 +6,9 @@ const path = require('path');
 const rimraf = require('rimraf');
 const log = logger('wdio-delta-reporter-service');
 
-var launchId: number;
-
 class DeltaService {
   restClient: any;
   options: any;
-  launchId = process.env.DELTA_LAUNCH_ID;
 
   constructor(options) {
     this.options = options;
@@ -60,16 +57,32 @@ class DeltaService {
     return this.restClient.update(url, data);
   }
 
+  finishLaunch(data: object) {
+    const url = ['api/v1/finish_launch'];
+    return this.restClient.update(url, data);
+  }
+
   async onPrepare(config, capabilities) {
     log.setLevel(config.logLevel || 'info');
 
     rimraf.sync('./.delta_service');
     fs.mkdirSync('./.delta_service');
 
+    var launchId: string = process.env.DELTA_LAUNCH_ID;
+
     if (!launchId) {
       log.info('No Launch detected, creating a new one...');
       var date = new Date();
-      var name = 'Launch ' + date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
+      var name =
+        this.options.testType +
+        ' | ' +
+        date.toDateString() +
+        ' - ' +
+        date.getHours() +
+        ':' +
+        date.getMinutes() +
+        ':' +
+        date.getSeconds();
       var launch = {
         name: name,
         project: this.options.project
@@ -158,6 +171,12 @@ class DeltaService {
 
   async onComplete(exitCode, config, capabilities, results) {
     const testRun = JSON.parse(fs.readFileSync('./.delta_service/testRun.json'));
+    let launch;
+    try {
+      launch = JSON.parse(fs.readFileSync('./.delta_service/launch.json'));
+    } catch {
+      launch = null;
+    }
 
     var test_run = {
       test_run_id: testRun.id,
@@ -169,6 +188,13 @@ class DeltaService {
     };
     var response = await this.updateTestRun(test_run);
     log.info(response);
+
+    if (launch) {
+      var response = await this.finishLaunch({
+        launch_id: launch.id
+      });
+      log.info(response);
+    }
   }
 }
 
