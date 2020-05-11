@@ -29,7 +29,7 @@ exports.config = {
     'docker',
     [
       new DeltaService({
-        host: 'http://localhost:5001',
+        host: 'http://localhost:5000',
         project: 'Delta Reporter',
         testType: 'End to End',
         job: {
