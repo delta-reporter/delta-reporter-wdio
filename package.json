@@ -1,6 +1,6 @@
 {
   "name": "@delta-reporter/wdio-delta-reporter-service",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Delta Reporter service for WebdriverIO",
   "main": "index.js",
   "files": [
