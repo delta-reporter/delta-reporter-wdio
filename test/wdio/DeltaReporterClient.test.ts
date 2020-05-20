@@ -26,4 +26,9 @@ describe('Basic validations', function() {
     browser.url('http://the-internet.herokuapp.com/floating_menu');
     VisualRegression.checkDocument();
   });
+
+  it('Should check that a visual regression test always fails', () => {
+    browser.url('http://the-internet.herokuapp.com/dynamic_content');
+    VisualRegression.checkDocument();
+  });
 });
