@@ -1,5 +1,24 @@
 var path = require('path');
 const DeltaService = require('../../lib/src');
+var path = require('path');
+var VisualRegressionCompare = require('wdio-novus-visual-regression-service/compare');
+
+function getScreenshotName(basePath) {
+  return function(context) {
+    var type = context.type;
+    var testName = context.test.title;
+    var browserVersion = parseInt(context.browser.version, 10);
+    var browserName = context.browser.name;
+    var browserViewport = context.meta.viewport;
+    var browserWidth = browserViewport.width;
+    var browserHeight = browserViewport.height;
+
+    return path.join(
+      basePath,
+      `${testName}_${type}_${browserName}_v${browserVersion}_${browserWidth}x${browserHeight}.png`
+    );
+  };
+}
 
 exports.config = {
   specs: ['./test/wdio/DeltaReporterClient.test.ts'],
@@ -26,6 +45,7 @@ exports.config = {
   },
   reporters: ['dot', 'spec'],
   services: [
+    'novus-visual-regression',
     'docker',
     [
       new DeltaService({
@@ -51,6 +71,21 @@ exports.config = {
       p: ['4444:4444'],
       shmSize: '2g'
     }
+  },
+  visualRegression: {
+    compare: new VisualRegressionCompare.LocalCompare({
+      referenceName: getScreenshotName(path.join(process.cwd(), 'screenshots/reference')),
+      screenshotName: getScreenshotName(path.join(process.cwd(), 'screenshots/screen')),
+      diffName: getScreenshotName(path.join(process.cwd(), 'screenshots/diff')),
+      misMatchTolerance: 0.01
+    }),
+    viewportChangePause: 300,
+    viewports: [
+      { width: 320, height: 480 },
+      { width: 480, height: 320 },
+      { width: 1024, height: 768 }
+    ],
+    orientations: ['landscape', 'portrait']
   },
   // Options for selenium-standalone
   // Path where all logs from the Selenium server should be stored.
