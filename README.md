@@ -8,7 +8,7 @@ Installing this service is simple as:
 
 
 ```bash
-npm install wdio-delta-reporter-service --save-dev
+npm i @delta-reporter/wdio-delta-reporter-service
 ```
 
 ### Configuration ###
