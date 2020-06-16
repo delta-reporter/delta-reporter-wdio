@@ -1,4 +1,5 @@
 node_modules
 .delta_service
+_results_
 lib
 logs
