@@ -63,10 +63,10 @@ class DeltaService {
     return this.restClient.update(url, data);
   }
 
-  sendFileToTest(test_history_id: number, file: any) {
-    const url = ['api/v1/file_receptor/' + test_history_id];
+  sendFileToTest(test_history_id: number, type: string, file: any) {
+    const url = ['api/v1/file_receptor_test_history/' + test_history_id];
     const form = new FormData();
-    // form.append('file', fs.createReadStream('/foo/bar.jpg'));
+    form.append('type', type);
     form.append('file', file);
     return this.restClient.create(url, form, { headers: form.getHeaders() });
   }
@@ -114,11 +114,9 @@ class DeltaService {
   }
 
   async before(capabilities, specs) {
-    browser.addCommand('sendFileToTest', async file => {
+    browser.addCommand('sendFileToTest', async (type, file) => {
       const delta_test = JSON.parse(fs.readFileSync('./.delta_service/test.json'));
-      console.log(delta_test.test_history_id);
-      console.log(file);
-      var response = await this.sendFileToTest(delta_test.test_history_id, file);
+      var response = await this.sendFileToTest(delta_test.test_history_id, type, file);
       log.info(response);
     });
   }

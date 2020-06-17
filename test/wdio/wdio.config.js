@@ -87,10 +87,10 @@ exports.config = {
       const outputFile = path.join(__dirname, file_name);
       console.log(__dirname);
       browser.saveScreenshot(outputFile);
-      browser.sendFileToTest(fs.createReadStream(outputFile));
+      browser.sendFileToTest('img', fs.createReadStream(outputFile));
       getLatestFile({ directory: browser.options.outputDir + '/_results_', extension: 'mp4' }, (filename = null) => {
         console.log(filename);
-        browser.sendFileToTest(fs.createReadStream(filename));
+        browser.sendFileToTest('video', fs.createReadStream(filename));
       });
     }
   }
