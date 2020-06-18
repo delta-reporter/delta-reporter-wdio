@@ -4,6 +4,7 @@ const RestClientPro = require('./rest');
 const fs = require('fs');
 const path = require('path');
 const rimraf = require('rimraf');
+const FormData = require('form-data');
 const log = logger('wdio-delta-reporter-service');
 
 class DeltaService {
@@ -62,6 +63,15 @@ class DeltaService {
     return this.restClient.update(url, data);
   }
 
+  sendFileToTest(test_history_id: number, type: string, file: any, description?: string) {
+    const url = ['api/v1/file_receiver_test_history/' + test_history_id];
+    const form = new FormData();
+    form.append('type', type);
+    form.append('file', file);
+    description ? form.append('description', description) : form.append('description', '');
+    return this.restClient.create(url, form, { headers: form.getHeaders() });
+  }
+
   async onPrepare(config, capabilities) {
     log.setLevel(config.logLevel || 'info');
 
@@ -102,6 +112,14 @@ class DeltaService {
     var response = await this.createTestRun(test_run);
     fs.writeFileSync(path.resolve('./.delta_service/testRun.json'), JSON.stringify(response));
     log.info(response);
+  }
+
+  async before(capabilities, specs) {
+    browser.addCommand('sendFileToTest', async (type, file, description?) => {
+      const delta_test = JSON.parse(fs.readFileSync('./.delta_service/test.json'));
+      var response = await this.sendFileToTest(delta_test.test_history_id, type, file, description);
+      log.info(response);
+    });
   }
 
   async beforeSuite(suite) {

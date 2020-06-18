@@ -1,5 +1,19 @@
 var path = require('path');
+const fs = require('fs');
+const video = require('wdio-video-reporter');
 const DeltaService = require('../../lib/src');
+
+function getLatestFile({ directory, extension }, callback) {
+  fs.readdir(directory, (_, dirlist) => {
+    const latest = dirlist
+      .map(_path => ({ stat: fs.lstatSync(path.join(directory, _path)), dir: _path }))
+      .filter(_path => _path.stat.isFile())
+      .filter(_path => (extension ? _path.dir.endsWith(`.${extension}`) : 1))
+      .sort((a, b) => b.stat.mtime - a.stat.mtime)
+      .map(_path => _path.dir);
+    callback(directory + '/' + latest[0]);
+  });
+}
 
 exports.config = {
   specs: ['./test/wdio/DeltaReporterClient.test.ts'],
@@ -24,7 +38,17 @@ exports.config = {
     require: ['tsconfig-paths/register', 'ts-node/register'],
     timeout: 60000
   },
-  reporters: ['dot', 'spec'],
+  reporters: [
+    'dot',
+    'spec',
+    [
+      video,
+      {
+        saveAllVideos: false, // If true, also saves videos for successful test cases
+        videoSlowdownMultiplier: 3 // Higher to get slower videos, lower for faster videos [Value 1-100]
+      }
+    ]
+  ],
   services: [
     'docker',
     [
@@ -54,5 +78,16 @@ exports.config = {
   },
   // Options for selenium-standalone
   // Path where all logs from the Selenium server should be stored.
-  seleniumLogs: './logs/'
+  seleniumLogs: './logs/',
+  afterTest(test) {
+    if (test.passed === false) {
+      const file_name = 'screenshot.png';
+      const outputFile = path.join(__dirname, file_name);
+      browser.saveScreenshot(outputFile);
+      browser.sendFileToTest('img', fs.createReadStream(outputFile));
+      getLatestFile({ directory: browser.options.outputDir + '/_results_', extension: 'mp4' }, (filename = null) => {
+        browser.sendFileToTest('video', fs.createReadStream(filename), 'Video captured during test execution');
+      });
+    }
+  }
 };
