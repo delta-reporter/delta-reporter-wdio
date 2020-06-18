@@ -1,15 +1,11 @@
 {
   "name": "@delta-reporter/wdio-delta-reporter-service",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "description": "Delta Reporter service for WebdriverIO",
-  "main": "index.js",
+  "main": "lib/src/index.js",
   "files": [
-    "index.js",
-    "compare.js",
-    "launcher.js",
     "*.md",
-    "src",
-    "lib"
+    "lib/src"
   ],
   "scripts": {
     "clean": "rimraf lib .tmp",
@@ -71,8 +67,7 @@
   },
   "homepage": "https://github.com/delta-reporter/wdio-delta-reporter-service#readme",
   "directories": {
-    "lib": "lib",
-    "test": "test"
+    "lib": "lib"
   },
   "keywords": [
     "webdriverio",
