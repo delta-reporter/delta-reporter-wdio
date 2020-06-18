@@ -64,7 +64,7 @@ class DeltaService {
   }
 
   sendFileToTest(test_history_id: number, type: string, file: any, description?: string) {
-    const url = ['api/v1/file_receptor_test_history/' + test_history_id];
+    const url = ['api/v1/file_receiver_test_history/' + test_history_id];
     const form = new FormData();
     form.append('type', type);
     form.append('file', file);
