@@ -90,7 +90,7 @@ exports.config = {
       browser.sendFileToTest('img', fs.createReadStream(outputFile));
       getLatestFile({ directory: browser.options.outputDir + '/_results_', extension: 'mp4' }, (filename = null) => {
         console.log(filename);
-        browser.sendFileToTest('video', fs.createReadStream(filename));
+        browser.sendFileToTest('video', fs.createReadStream(filename), 'Video captured during test execution');
       });
     }
   }
