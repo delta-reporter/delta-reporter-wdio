@@ -115,8 +115,9 @@ class DeltaService {
   }
 
   async before(capabilities, specs) {
-    browser.addCommand('sendFileToTest', async (type, file, description?) => {
+    browser.addCommand('sendFileToTest', async (type: string, filePath: string, description?) => {
       const delta_test = JSON.parse(fs.readFileSync('./.delta_service/test.json'));
+      const file = fs.createReadStream(filePath);
       var response = await this.sendFileToTest(delta_test.test_history_id, type, file, description);
       log.info(response);
     });

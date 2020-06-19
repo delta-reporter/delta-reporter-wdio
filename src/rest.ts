@@ -35,9 +35,6 @@ class RestClient {
   }
 
   create(path, data, options = { headers: this.headers }) {
-    console.log('### SEND FILE LOGS ###');
-    console.log(data);
-    console.log(options);
     return RestClient.request('POST', this.buildPath(path), data, options);
   }
 

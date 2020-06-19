@@ -1,6 +1,6 @@
 {
   "name": "@delta-reporter/wdio-delta-reporter-service",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Delta Reporter service for WebdriverIO",
   "main": "lib/src/index.js",
   "files": [
@@ -56,14 +56,14 @@
     "tslint": "^5.16.0",
     "typescript": "^3.9.5",
     "wdio-docker-service": "^2.4.0",
-    "webdriverio": "^5.23.0"
-  },
-  "dependencies": {
-    "axios": "^0.19.2",
-    "axios-retry": "^3.1.8",
+    "webdriverio": "^5.23.0",
     "husky": "^3.0.8",
     "wdio-mocha-framework": "^0.6.4",
     "wdio-video-reporter": "^3.0.0"
+  },
+  "dependencies": {
+    "axios": "^0.19.2",
+    "axios-retry": "^3.1.8"
   },
   "homepage": "https://github.com/delta-reporter/wdio-delta-reporter-service#readme",
   "directories": {
