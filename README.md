@@ -15,7 +15,7 @@ npm i @delta-reporter/wdio-delta-reporter-service
 
 
 ```js
-const DeltaService = require('wdio-delta-reporter-service');
+const DeltaService = require("@delta-reporter/wdio-delta-reporter-service");
 
 exports.config = {
   // ...
