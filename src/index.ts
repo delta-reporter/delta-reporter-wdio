@@ -10,6 +10,7 @@ const log = logger('wdio-delta-reporter-service');
 class DeltaService {
   restClient: any;
   options: any;
+  delta_test: any;
 
   constructor(options) {
     this.options = options;
@@ -116,8 +117,7 @@ class DeltaService {
 
   async before(capabilities, specs) {
     browser.addCommand('sendFileToTest', async (type, file, description?) => {
-      const delta_test = JSON.parse(fs.readFileSync('./.delta_service/test.json'));
-      var response = await this.sendFileToTest(delta_test.test_history_id, type, file, description);
+      var response = await this.sendFileToTest(this.delta_test.test_history_id, type, file, description);
       log.info(response);
     });
   }
@@ -151,15 +151,14 @@ class DeltaService {
     };
 
     var response = await this.createTestHistory(test_history);
+    this.delta_test = response;
     fs.writeFileSync(path.resolve('./.delta_service/test.json'), JSON.stringify(response));
     log.info(response);
   }
 
   async afterTest(test, context, { error, result, duration, passed, retries }) {
-    const delta_test = JSON.parse(fs.readFileSync('./.delta_service/test.json'));
-
     var test_history = {
-      test_history_id: delta_test.test_history_id,
+      test_history_id: this.delta_test.test_history_id,
       end_datetime: new Date(),
       test_status: passed ? 'Passed' : 'Failed',
       trace: error ? error.stack : null,
