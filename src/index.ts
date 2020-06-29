@@ -11,6 +11,7 @@ class DeltaService {
   restClient: any;
   options: any;
   delta_test: any;
+  delta_test_suite: any;
 
   constructor(options) {
     this.options = options;
@@ -134,20 +135,19 @@ class DeltaService {
     };
 
     var response = await this.createTestSuiteHistory(test_run_suite);
-    fs.writeFileSync(path.resolve('./.delta_service/testSuite.json'), JSON.stringify(response));
+    this.delta_test_suite = response;
     log.info(response);
   }
 
   async beforeTest(test, context) {
-    const testSuite = JSON.parse(fs.readFileSync('./.delta_service/testSuite.json'));
     const testRun = JSON.parse(fs.readFileSync('./.delta_service/testRun.json'));
 
     var test_history = {
       name: test.title,
       start_datetime: new Date(),
-      test_suite_id: testSuite.test_suite_id,
+      test_suite_id: this.delta_test_suite.test_suite_id,
       test_run_id: testRun.id,
-      test_suite_history_id: testSuite.test_suite_history_id
+      test_suite_history_id: this.delta_test_suite.test_suite_history_id
     };
 
     var response = await this.createTestHistory(test_history);
@@ -172,10 +172,8 @@ class DeltaService {
   }
 
   async afterSuite(suite) {
-    const testSuite = JSON.parse(fs.readFileSync('./.delta_service/testSuite.json'));
-
     var test_suite_history = {
-      test_suite_history_id: testSuite.test_suite_history_id,
+      test_suite_history_id: this.delta_test_suite.test_suite_history_id,
       end_datetime: new Date(),
       test_suite_status: suite.error ? 'Failed' : 'Successful',
       data: {
