@@ -82,7 +82,7 @@ class DeltaService {
 
     var launchId: string = process.env.DELTA_LAUNCH_ID;
 
-    if (!launchId || launchId == 'None') {
+    if (!launchId || isNaN(Number(launchId))) {
       log.info('No Launch detected, creating a new one...');
       var date = new Date();
       var name =
