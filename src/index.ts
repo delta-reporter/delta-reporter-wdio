@@ -10,6 +10,8 @@ const log = logger('wdio-delta-reporter-service');
 class DeltaService {
   restClient: any;
   options: any;
+  delta_test: any;
+  delta_test_suite: any;
 
   constructor(options) {
     this.options = options;
@@ -80,7 +82,7 @@ class DeltaService {
 
     var launchId: string = process.env.DELTA_LAUNCH_ID;
 
-    if (!launchId) {
+    if (!launchId || isNaN(Number(launchId))) {
       log.info('No Launch detected, creating a new one...');
       var date = new Date();
       var name =
@@ -116,8 +118,7 @@ class DeltaService {
 
   async before(capabilities, specs) {
     browser.addCommand('sendFileToTest', async (type, file, description?) => {
-      const delta_test = JSON.parse(fs.readFileSync('./.delta_service/test.json'));
-      var response = await this.sendFileToTest(delta_test.test_history_id, type, file, description);
+      var response = await this.sendFileToTest(this.delta_test.test_history_id, type, file, description);
       log.info(response);
     });
   }
@@ -134,32 +135,30 @@ class DeltaService {
     };
 
     var response = await this.createTestSuiteHistory(test_run_suite);
-    fs.writeFileSync(path.resolve('./.delta_service/testSuite.json'), JSON.stringify(response));
+    this.delta_test_suite = response;
     log.info(response);
   }
 
   async beforeTest(test, context) {
-    const testSuite = JSON.parse(fs.readFileSync('./.delta_service/testSuite.json'));
     const testRun = JSON.parse(fs.readFileSync('./.delta_service/testRun.json'));
 
     var test_history = {
       name: test.title,
       start_datetime: new Date(),
-      test_suite_id: testSuite.test_suite_id,
+      test_suite_id: this.delta_test_suite.test_suite_id,
       test_run_id: testRun.id,
-      test_suite_history_id: testSuite.test_suite_history_id
+      test_suite_history_id: this.delta_test_suite.test_suite_history_id
     };
 
     var response = await this.createTestHistory(test_history);
+    this.delta_test = response;
     fs.writeFileSync(path.resolve('./.delta_service/test.json'), JSON.stringify(response));
     log.info(response);
   }
 
   async afterTest(test, context, { error, result, duration, passed, retries }) {
-    const delta_test = JSON.parse(fs.readFileSync('./.delta_service/test.json'));
-
     var test_history = {
-      test_history_id: delta_test.test_history_id,
+      test_history_id: this.delta_test.test_history_id,
       end_datetime: new Date(),
       test_status: passed ? 'Passed' : 'Failed',
       trace: error ? error.stack : null,
@@ -173,10 +172,8 @@ class DeltaService {
   }
 
   async afterSuite(suite) {
-    const testSuite = JSON.parse(fs.readFileSync('./.delta_service/testSuite.json'));
-
     var test_suite_history = {
-      test_suite_history_id: testSuite.test_suite_history_id,
+      test_suite_history_id: this.delta_test_suite.test_suite_history_id,
       end_datetime: new Date(),
       test_suite_status: suite.error ? 'Failed' : 'Successful',
       data: {
