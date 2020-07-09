@@ -118,7 +118,12 @@ class DeltaService {
 
   async before(capabilities, specs) {
     browser.addCommand('sendFileToTest', async (type, file, description?) => {
-      var response = await this.sendFileToTest(this.delta_test.test_history_id, type, file, description);
+      var response = await this.sendFileToTest(
+        this.delta_test.test_history_id,
+        type,
+        fs.createReadStream(file),
+        description
+      );
       log.info(response);
     });
   }
