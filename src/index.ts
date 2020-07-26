@@ -85,16 +85,10 @@ class DeltaService {
     if (!launchId || isNaN(Number(launchId))) {
       log.info('No Launch detected, creating a new one...');
       var date = new Date();
-      var name =
-        this.options.testType +
-        ' | ' +
-        date.toDateString() +
-        ' - ' +
-        date.getHours() +
-        ':' +
-        date.getMinutes() +
-        ':' +
-        date.getSeconds();
+      let hours = date.getHours() < 10 ? '0' + date.getHours() : date.getHours();
+      let minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
+      let seconds = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds();
+      var name = this.options.testType + ' | ' + date.toDateString() + ' - ' + hours + ':' + minutes + ':' + seconds;
       var launch = {
         name: name,
         project: this.options.project
