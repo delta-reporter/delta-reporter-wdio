@@ -1,37 +1,23 @@
-import WDIOReporter from '@wdio/reporter';
 import logger from '@wdio/logger';
 
-const RestClientDelta = require('./rest');
+const RestClientPro = require('./rest');
 const fs = require('fs');
 const path = require('path');
 const rimraf = require('rimraf');
 const FormData = require('form-data');
 const log = logger('wdio-delta-reporter-service');
 
-export interface ReporterOptions {
-  host: string;
-  project: string;
-  testType: string;
-  configFile: string;
-  logFile: string;
-  logLevel: string;
-}
-
-export default class DeltaService extends WDIOReporter {
-  options: ReporterOptions;
+class DeltaService {
   restClient: any;
-  delta_launch: any;
-  delta_test_run: any;
+  options: any;
   delta_test: any;
   delta_test_suite: any;
 
-  constructor(options: ReporterOptions) {
-    options = Object.assign(options, { stdout: true });
-    super(options);
-    this.restClient = new RestClientDelta({
-      baseURL: options.host
-    });
+  constructor(options) {
     this.options = options;
+    this.restClient = new RestClientPro({
+      baseURL: this.options.host
+    });
   }
 
   getLaunchById(id: number) {
@@ -88,9 +74,45 @@ export default class DeltaService extends WDIOReporter {
     return this.restClient.create(url, form, { headers: form.getHeaders() });
   }
 
-  async onRunnerStart() {
+  async onPrepare(config, capabilities) {
+    log.setLevel(config.logLevel || 'info');
+
+    rimraf.sync('./.delta_service');
+    fs.mkdirSync('./.delta_service');
+
+    var launchId: string = process.env.DELTA_LAUNCH_ID;
+
+    if (!launchId || isNaN(Number(launchId))) {
+      log.info('No Launch detected, creating a new one...');
+      var date = new Date();
+      let hours = date.getHours() < 10 ? '0' + date.getHours() : date.getHours();
+      let minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
+      let seconds = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds();
+      var name = this.options.testType + ' | ' + date.toDateString() + ' - ' + hours + ':' + minutes + ':' + seconds;
+      var launch = {
+        name: name,
+        project: this.options.project
+      };
+      var response = await this.createLaunch(launch);
+      fs.writeFileSync(path.resolve('./.delta_service/launch.json'), JSON.stringify(response));
+      launchId = response.id;
+      log.info(response);
+    }
+
+    var test_run = {
+      test_type: this.options.testType,
+      launch_id: launchId,
+      start_datetime: new Date()
+    };
+
+    var response = await this.createTestRun(test_run);
+    fs.writeFileSync(path.resolve('./.delta_service/testRun.json'), JSON.stringify(response));
+    log.info(response);
+  }
+
+  async before(capabilities, specs) {
     browser.addCommand('sendFileToTest', async (type, file, description?) => {
-      let response = await this.sendFileToTest(
+      var response = await this.sendFileToTest(
         this.delta_test.test_history_id,
         type,
         fs.createReadStream(file),
@@ -98,53 +120,16 @@ export default class DeltaService extends WDIOReporter {
       );
       log.info(response);
     });
-    log.setLevel(this.options.logLevel || 'info');
-
-    rimraf.sync('./.delta_service');
-    fs.mkdirSync('./.delta_service');
-
-    let launchId: string = process.env.DELTA_LAUNCH_ID;
-
-    if (!launchId || isNaN(Number(launchId))) {
-      log.info('No Launch detected, creating a new one...');
-      let date = new Date();
-      let hours = date.getHours() < 10 ? '0' + date.getHours() : date.getHours();
-      let minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
-      let seconds = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds();
-      let name = this.options.testType + ' | ' + date.toDateString() + ' - ' + hours + ':' + minutes + ':' + seconds;
-      var launch = {
-        name: name,
-        project: this.options.project
-      };
-      let response = await this.createLaunch(launch);
-      // fs.writeFileSync(path.resolve('./.delta_service/launch.json'), JSON.stringify(response));
-      launchId = response.id;
-      this.delta_launch = response;
-      log.info(response);
-    }
-
-    let test_run = {
-      test_type: this.options.testType,
-      launch_id: launchId,
-      start_datetime: new Date()
-    };
-
-    let response = await this.createTestRun(test_run);
-    // fs.writeFileSync(path.resolve('./.delta_service/testRun.json'), JSON.stringify(response));
-    this.delta_test_run = response;
-    log.info(response);
   }
-  onBeforeCommand() {}
-  onAfterCommand() {}
-  onScreenshot() {}
-  async onSuiteStart(suite) {
-    // const testRun = JSON.parse(fs.readFileSync('./.delta_service/testRun.json'));
+
+  async beforeSuite(suite) {
+    const testRun = JSON.parse(fs.readFileSync('./.delta_service/testRun.json'));
 
     var test_run_suite = {
       name: suite.title,
       test_type: this.options.testType,
       start_datetime: new Date(),
-      test_run_id: this.delta_test_run.id,
+      test_run_id: testRun.id,
       project: this.options.project
     };
 
@@ -152,16 +137,15 @@ export default class DeltaService extends WDIOReporter {
     this.delta_test_suite = response;
     log.info(response);
   }
-  onHookStart() {}
-  onHookEnd() {}
-  async onTestStart(test) {
-    // const testRun = JSON.parse(fs.readFileSync('./.delta_service/testRun.json'));
+
+  async beforeTest(test, context) {
+    const testRun = JSON.parse(fs.readFileSync('./.delta_service/testRun.json'));
 
     var test_history = {
       name: test.title,
       start_datetime: new Date(),
       test_suite_id: this.delta_test_suite.test_suite_id,
-      test_run_id: this.delta_test_run.id,
+      test_run_id: testRun.id,
       test_suite_history_id: this.delta_test_suite.test_suite_history_id
     };
 
@@ -170,10 +154,23 @@ export default class DeltaService extends WDIOReporter {
     fs.writeFileSync(path.resolve('./.delta_service/test.json'), JSON.stringify(response));
     log.info(response);
   }
-  onTestPass() {}
-  onTestSkip(test) {}
-  onTestEnd() {}
-  async onSuiteEnd(suite) {
+
+  async afterTest(test, context, { error, result, duration, passed, retries }) {
+    var test_history = {
+      test_history_id: this.delta_test.test_history_id,
+      end_datetime: new Date(),
+      test_status: passed ? 'Passed' : 'Failed',
+      trace: error ? error.stack : null,
+      file: test.file,
+      message: error ? error.message : null,
+      error_type: error ? String(error).split(':')[0] : null,
+      retries: test.retries
+    };
+    var response = await this.updateTestHistory(test_history);
+    log.info(response);
+  }
+
+  async afterSuite(suite) {
     var test_suite_history = {
       test_suite_history_id: this.delta_test_suite.test_suite_history_id,
       end_datetime: new Date(),
@@ -185,26 +182,30 @@ export default class DeltaService extends WDIOReporter {
     var response = await this.updateSuiteHistory(test_suite_history);
     log.info(response);
   }
-  async onRunnerEnd() {
-    // const testRun = JSON.parse(fs.readFileSync('./.delta_service/testRun.json'));
-    // let launch;
-    // try {
-    //   launch = JSON.parse(fs.readFileSync('./.delta_service/launch.json'));
-    // } catch {
-    //   launch = null;
-    // }
+
+  async onComplete(exitCode, config, capabilities, results) {
+    const testRun = JSON.parse(fs.readFileSync('./.delta_service/testRun.json'));
+    let launch;
+    try {
+      launch = JSON.parse(fs.readFileSync('./.delta_service/launch.json'));
+    } catch {
+      launch = null;
+    }
 
     var test_run = {
-      test_run_id: this.delta_test_run.id,
+      test_run_id: testRun.id,
       end_datetime: new Date(),
-      test_run_status: 0 ? 'Failed' : 'Passed'
+      test_run_status: exitCode ? 'Failed' : 'Passed',
+      data: {
+        capabilities
+      }
     };
     var response = await this.updateTestRun(test_run);
     log.info(response);
 
-    if (this.delta_launch) {
+    if (launch) {
       var response = await this.finishLaunch({
-        launch_id: this.delta_launch.id
+        launch_id: launch.id
       });
       log.info(response);
     }

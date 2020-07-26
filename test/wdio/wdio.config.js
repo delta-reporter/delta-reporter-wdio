@@ -47,26 +47,25 @@ exports.config = {
         saveAllVideos: false, // If true, also saves videos for successful test cases
         videoSlowdownMultiplier: 3 // Higher to get slower videos, lower for faster videos [Value 1-100]
       }
+    ],
+    [
+      DeltaService,
+      {
+        host: 'http://localhost:5000',
+        project: 'Delta Reporter',
+        testType: 'End to End'
+      }
     ]
   ],
   services: [
-    'docker',
-    [
-      new DeltaService({
-        host: 'http://localhost:5000',
-        project: 'Delta Reporter',
-        testType: 'End to End',
-        job: {
-          jenkinsHost: process.env.HOST,
-          jobURL: process.env.BUILD_URL,
-          name: process.env.JOB_NAME
-        },
-        run: {
-          buildNumber: process.env.BUILD_NUMBER,
-          startedBy: process.env.BUILD_CAUSE_MANUALTRIGGER ? 'HUMAN' : 'SCHEDULER' // Actually could be "SCHEDULER", "UPSTREAM_JOB", "HUMAN"
-        }
-      })
-    ]
+    'docker'
+    // [
+    //   new DeltaService({
+    //     host: 'http://localhost:5000',
+    //     project: 'Delta Reporter',
+    //     testType: 'End to End'
+    //   })
+    // ]
   ],
   dockerOptions: {
     image: 'selenium/standalone-chrome',
@@ -84,9 +83,9 @@ exports.config = {
       const file_name = 'screenshot.png';
       const outputFile = path.join(__dirname, file_name);
       browser.saveScreenshot(outputFile);
-      browser.sendFileToTest('img', fs.createReadStream(outputFile));
+      browser.sendFileToTest('img', outputFile);
       getLatestFile({ directory: browser.options.outputDir + '/_results_', extension: 'mp4' }, (filename = null) => {
-        browser.sendFileToTest('video', fs.createReadStream(filename), 'Video captured during test execution');
+        browser.sendFileToTest('video', filename, 'Video captured during test execution');
       });
     }
   }
