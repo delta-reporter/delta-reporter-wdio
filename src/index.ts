@@ -88,7 +88,7 @@ export default class DeltaService extends WDIOReporter {
     return this.restClient.create(url, form, { headers: form.getHeaders() });
   }
 
-  async onRunnerStart() {
+  onRunnerStart() {
     browser.addCommand('sendFileToTest', async (type, file, description?) => {
       let response = await this.sendFileToTest(
         this.delta_test.test_history_id,
@@ -116,11 +116,16 @@ export default class DeltaService extends WDIOReporter {
         name: name,
         project: this.options.project
       };
-      let response = await this.createLaunch(launch);
+      let response = async () =>
+        await this.createLaunch(launch).then(value => {
+          launchId = value.id;
+          this.delta_launch = response;
+          log.info(response);
+        });
       // fs.writeFileSync(path.resolve('./.delta_service/launch.json'), JSON.stringify(response));
-      launchId = response.id;
-      this.delta_launch = response;
-      log.info(response);
+      // launchId = response.id;
+      // this.delta_launch = response;
+      // log.info(response);
     }
 
     let test_run = {
@@ -129,7 +134,7 @@ export default class DeltaService extends WDIOReporter {
       start_datetime: new Date()
     };
 
-    let response = await this.createTestRun(test_run);
+    let response = async () => await this.createTestRun(test_run);
     // fs.writeFileSync(path.resolve('./.delta_service/testRun.json'), JSON.stringify(response));
     this.delta_test_run = response;
     log.info(response);
@@ -137,7 +142,8 @@ export default class DeltaService extends WDIOReporter {
   onBeforeCommand() {}
   onAfterCommand() {}
   onScreenshot() {}
-  async onSuiteStart(suite) {
+
+  onSuiteStart(suite) {
     // const testRun = JSON.parse(fs.readFileSync('./.delta_service/testRun.json'));
 
     var test_run_suite = {
@@ -148,13 +154,13 @@ export default class DeltaService extends WDIOReporter {
       project: this.options.project
     };
 
-    var response = await this.createTestSuiteHistory(test_run_suite);
+    var response = async () => await this.createTestSuiteHistory(test_run_suite);
     this.delta_test_suite = response;
     log.info(response);
   }
   onHookStart() {}
   onHookEnd() {}
-  async onTestStart(test) {
+  onTestStart(test) {
     // const testRun = JSON.parse(fs.readFileSync('./.delta_service/testRun.json'));
 
     var test_history = {
@@ -165,7 +171,7 @@ export default class DeltaService extends WDIOReporter {
       test_suite_history_id: this.delta_test_suite.test_suite_history_id
     };
 
-    var response = await this.createTestHistory(test_history);
+    var response = async () => await this.createTestHistory(test_history);
     this.delta_test = response;
     fs.writeFileSync(path.resolve('./.delta_service/test.json'), JSON.stringify(response));
     log.info(response);
@@ -173,7 +179,8 @@ export default class DeltaService extends WDIOReporter {
   onTestPass() {}
   onTestSkip(test) {}
   onTestEnd() {}
-  async onSuiteEnd(suite) {
+
+  onSuiteEnd(suite) {
     var test_suite_history = {
       test_suite_history_id: this.delta_test_suite.test_suite_history_id,
       end_datetime: new Date(),
@@ -182,10 +189,11 @@ export default class DeltaService extends WDIOReporter {
         file: suite.file
       }
     };
-    var response = await this.updateSuiteHistory(test_suite_history);
+    var response = async () => await this.updateSuiteHistory(test_suite_history);
     log.info(response);
   }
-  async onRunnerEnd() {
+
+  onRunnerEnd() {
     // const testRun = JSON.parse(fs.readFileSync('./.delta_service/testRun.json'));
     // let launch;
     // try {
@@ -199,13 +207,14 @@ export default class DeltaService extends WDIOReporter {
       end_datetime: new Date(),
       test_run_status: 0 ? 'Failed' : 'Passed'
     };
-    var response = await this.updateTestRun(test_run);
+    var response = async () => await this.updateTestRun(test_run);
     log.info(response);
 
     if (this.delta_launch) {
-      var response = await this.finishLaunch({
-        launch_id: this.delta_launch.id
-      });
+      var response = async () =>
+        await this.finishLaunch({
+          launch_id: this.delta_launch.id
+        });
       log.info(response);
     }
   }
