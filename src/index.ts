@@ -1,7 +1,9 @@
 import WDIOReporter from '@wdio/reporter';
 import logger from '@wdio/logger';
+// import * as DeltaUtils from './utils';
+const DeltaRequests = require('./requests');
 
-const RestClientDelta = require('./rest');
+// const RestClientDelta = require('./rest');
 const fs = require('fs');
 const path = require('path');
 const rimraf = require('rimraf');
@@ -18,8 +20,12 @@ export interface ReporterOptions {
 }
 
 export default class DeltaService extends WDIOReporter {
+  // super(options);
   options: ReporterOptions;
   restClient: any;
+  promise_completed: boolean;
+  // delta_promises: any;
+  requests: any;
   delta_launch: any;
   delta_test_run: any;
   delta_test: any;
@@ -28,56 +34,67 @@ export default class DeltaService extends WDIOReporter {
   constructor(options: ReporterOptions) {
     options = Object.assign(options, { stdout: true });
     super(options);
-    this.restClient = new RestClientDelta({
-      baseURL: options.host
-    });
+    this.promise_completed = false;
+    // this.restClient = new RestClientDelta({
+    //   baseURL: options.host
+    // });
     this.options = options;
+    this.requests = new DeltaRequests(options.host);
+    // this.delta_promises = {};
   }
 
-  getLaunchById(id: number) {
-    const url = ['api/v1/launch', id].join('/');
-    return this.restClient.retrieve(url);
+  get isSynchronised(): boolean {
+    return false;
   }
 
-  createLaunch(data: object) {
-    const url = ['api/v1/launch'];
-    return this.restClient.create(url, data);
+  set isSynchronised(value: boolean) {
+    this.promise_completed = value;
   }
 
-  createTestRun(data: object) {
-    const url = ['api/v1/test_run'];
-    return this.restClient.create(url, data);
-  }
+  // getLaunchById(id: number) {
+  //   const url = ['api/v1/launch', id].join('/');
+  //   return this.restClient.retrieve(url);
+  // }
 
-  createTestSuiteHistory(data: object) {
-    const url = ['api/v1/test_suite_history'];
-    return this.restClient.create(url, data);
-  }
+  // createLaunch(data: object) {
+  //   const url = ['api/v1/launch'];
+  //   return this.restClient.create(url, data);
+  // }
 
-  createTestHistory(data: object) {
-    const url = ['api/v1/test_history'];
-    return this.restClient.create(url, data);
-  }
+  // createTestRun(data: object) {
+  //   const url = ['api/v1/test_run'];
+  //   return this.restClient.create(url, data);
+  // }
 
-  updateTestHistory(data: object) {
-    const url = ['api/v1/test_history'];
-    return this.restClient.update(url, data);
-  }
+  // createTestSuiteHistory(data: object) {
+  //   const url = ['api/v1/test_suite_history'];
+  //   return this.restClient.create(url, data);
+  // }
 
-  updateSuiteHistory(data: object) {
-    const url = ['api/v1/test_suite_history'];
-    return this.restClient.update(url, data);
-  }
+  // createTestHistory(data: object) {
+  //   const url = ['api/v1/test_history'];
+  //   return this.restClient.create(url, data);
+  // }
 
-  updateTestRun(data: object) {
-    const url = ['api/v1/test_run'];
-    return this.restClient.update(url, data);
-  }
+  // updateTestHistory(data: object) {
+  //   const url = ['api/v1/test_history'];
+  //   return this.restClient.update(url, data);
+  // }
 
-  finishLaunch(data: object) {
-    const url = ['api/v1/finish_launch'];
-    return this.restClient.update(url, data);
-  }
+  // updateSuiteHistory(data: object) {
+  //   const url = ['api/v1/test_suite_history'];
+  //   return this.restClient.update(url, data);
+  // }
+
+  // updateTestRun(data: object) {
+  //   const url = ['api/v1/test_run'];
+  //   return this.restClient.update(url, data);
+  // }
+
+  // finishLaunch(data: object) {
+  //   const url = ['api/v1/finish_launch'];
+  //   return this.restClient.update(url, data);
+  // }
 
   sendFileToTest(test_history_id: number, type: string, file: any, description?: string) {
     const url = ['api/v1/file_receiver_test_history/' + test_history_id];
@@ -116,12 +133,32 @@ export default class DeltaService extends WDIOReporter {
         name: name,
         project: this.options.project
       };
-      let response = async () =>
-        await this.createLaunch(launch).then(value => {
-          launchId = value.id;
-          this.delta_launch = response;
-          log.info(response);
-        });
+
+      // let tempiId = DeltaUtils.getUniqId()
+
+      // this.delta_promises[tempiId] = DeltaUtils.storeNewPromise((resolve, reject) => {
+      //   this.createLaunch(launch)
+      //   .then((response) => {
+      //     this.delta_promises[tempiId].realId = response.id;
+      //     this.delta_launch = response.id;
+      //     resolve(response);
+      //   }, (error) => {
+      //       console.dir(error);
+      //       reject(error);
+      //   });
+
+      // .then(response => {
+      //   launchId = response.id;
+      //   this.delta_launch = response;
+      //   log.info(response);
+      // })
+      // })
+
+      // await this.createLaunch(launch).then(response => {
+      //     launchId = response.id;
+      //     this.delta_launch = response;
+      //     log.info(response);
+      //   });
       // fs.writeFileSync(path.resolve('./.delta_service/launch.json'), JSON.stringify(response));
       // launchId = response.id;
       // this.delta_launch = response;
@@ -134,33 +171,56 @@ export default class DeltaService extends WDIOReporter {
       start_datetime: new Date()
     };
 
-    let response = async () => await this.createTestRun(test_run);
+    // this.createTestRun(test_run).then(response => {
+    //   this.delta_test_run = response;
+    //   log.info(response);
+    // }
+
+    // )
     // fs.writeFileSync(path.resolve('./.delta_service/testRun.json'), JSON.stringify(response));
-    this.delta_test_run = response;
-    log.info(response);
+    // this.delta_test_run = response;
+    // log.info(response);
   }
   onBeforeCommand() {}
   onAfterCommand() {}
   onScreenshot() {}
 
-  onSuiteStart(suite) {
+  async onSuiteStart(suite) {
     // const testRun = JSON.parse(fs.readFileSync('./.delta_service/testRun.json'));
 
-    var test_run_suite = {
-      name: suite.title,
-      test_type: this.options.testType,
-      start_datetime: new Date(),
-      test_run_id: this.delta_test_run.id,
-      project: this.options.project
-    };
+    console.log('#### TEST SUITE START ###');
+    console.log(this.delta_test_run);
 
-    var response = async () => await this.createTestSuiteHistory(test_run_suite);
-    this.delta_test_suite = response;
-    log.info(response);
+    this.delta_test_run.then(value => {
+      var test_run_suite = {
+        name: suite.title,
+        test_type: this.options.testType,
+        start_datetime: new Date(),
+        test_run_id: this.delta_test_run.id,
+        project: this.options.project
+      };
+
+      // let response = this.createTestSuiteHistory(test_run_suite);
+      // this.delta_test_suite = response;
+      // log.info(response);
+      // log.info(response);
+    });
+
+    // var test_run_suite = {
+    //   name: suite.title,
+    //   test_type: this.options.testType,
+    //   start_datetime: new Date(),
+    //   test_run_id: this.delta_test_run.id,
+    //   project: this.options.project
+    // };
+
+    // var response = await this.createTestSuiteHistory(test_run_suite);
+    // this.delta_test_suite = response;
+    // log.info(response);
   }
   onHookStart() {}
   onHookEnd() {}
-  onTestStart(test) {
+  async onTestStart(test) {
     // const testRun = JSON.parse(fs.readFileSync('./.delta_service/testRun.json'));
 
     var test_history = {
@@ -171,16 +231,16 @@ export default class DeltaService extends WDIOReporter {
       test_suite_history_id: this.delta_test_suite.test_suite_history_id
     };
 
-    var response = async () => await this.createTestHistory(test_history);
-    this.delta_test = response;
-    fs.writeFileSync(path.resolve('./.delta_service/test.json'), JSON.stringify(response));
-    log.info(response);
+    // var response = await this.createTestHistory(test_history);
+    // this.delta_test = response;
+    // fs.writeFileSync(path.resolve('./.delta_service/test.json'), JSON.stringify(response));
+    // log.info(response);
   }
   onTestPass() {}
   onTestSkip(test) {}
   onTestEnd() {}
 
-  onSuiteEnd(suite) {
+  async onSuiteEnd(suite) {
     var test_suite_history = {
       test_suite_history_id: this.delta_test_suite.test_suite_history_id,
       end_datetime: new Date(),
@@ -189,11 +249,12 @@ export default class DeltaService extends WDIOReporter {
         file: suite.file
       }
     };
-    var response = async () => await this.updateSuiteHistory(test_suite_history);
-    log.info(response);
+    // var response = await this.updateSuiteHistory(test_suite_history);
+    // log.info(response);
   }
 
-  onRunnerEnd() {
+  async onRunnerEnd() {
+    let response: any;
     // const testRun = JSON.parse(fs.readFileSync('./.delta_service/testRun.json'));
     // let launch;
     // try {
@@ -207,16 +268,15 @@ export default class DeltaService extends WDIOReporter {
       end_datetime: new Date(),
       test_run_status: 0 ? 'Failed' : 'Passed'
     };
-    var response = async () => await this.updateTestRun(test_run);
-    log.info(response);
+    // response = await this.updateTestRun(test_run);
+    // log.info(response);
 
-    if (this.delta_launch) {
-      var response = async () =>
-        await this.finishLaunch({
-          launch_id: this.delta_launch.id
-        });
-      log.info(response);
-    }
+    // if (this.delta_launch) {
+    //    response = await this.finishLaunch({
+    //       launch_id: this.delta_launch.id
+    //     });
+    //   log.info(response);
+    // }
   }
 }
 
