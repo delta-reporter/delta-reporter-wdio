@@ -26,6 +26,8 @@ export default class DeltaService extends WDIOReporter {
   promise_completed: boolean;
   // delta_promises: any;
   requests: any;
+  delta_temp_launch_id: any;
+  delta_temp_test_run_id: any;
   delta_launch: any;
   delta_test_run: any;
   delta_test: any;
@@ -134,6 +136,9 @@ export default class DeltaService extends WDIOReporter {
         project: this.options.project
       };
 
+      let { tempId } = this.requests.startLaunch(launch);
+      this.delta_temp_launch_id = tempId;
+
       // let tempiId = DeltaUtils.getUniqId()
 
       // this.delta_promises[tempiId] = DeltaUtils.storeNewPromise((resolve, reject) => {
@@ -170,7 +175,15 @@ export default class DeltaService extends WDIOReporter {
       launch_id: launchId,
       start_datetime: new Date()
     };
-
+    console.log('#### TEMPORARY LAUNCH ID: ####');
+    console.log(this.delta_temp_launch_id);
+    if (this.delta_temp_launch_id) {
+      let { tempId } = this.requests.startTestRun(test_run, this.delta_temp_launch_id);
+      this.delta_temp_test_run_id = tempId;
+    } else {
+      let { tempId } = this.requests.startTestRun(test_run);
+      this.delta_temp_test_run_id = tempId;
+    }
     // this.createTestRun(test_run).then(response => {
     //   this.delta_test_run = response;
     //   log.info(response);
@@ -185,26 +198,37 @@ export default class DeltaService extends WDIOReporter {
   onAfterCommand() {}
   onScreenshot() {}
 
-  async onSuiteStart(suite) {
+  onSuiteStart(suite) {
     // const testRun = JSON.parse(fs.readFileSync('./.delta_service/testRun.json'));
 
     console.log('#### TEST SUITE START ###');
     console.log(this.delta_test_run);
 
-    this.delta_test_run.then(value => {
-      var test_run_suite = {
-        name: suite.title,
-        test_type: this.options.testType,
-        start_datetime: new Date(),
-        test_run_id: this.delta_test_run.id,
-        project: this.options.project
-      };
+    var test_run_suite = {
+      name: suite.title,
+      test_type: this.options.testType,
+      start_datetime: new Date(),
+      project: this.options.project
+    };
 
-      // let response = this.createTestSuiteHistory(test_run_suite);
-      // this.delta_test_suite = response;
-      // log.info(response);
-      // log.info(response);
-    });
+    let { tempId } = this.requests.startTestSuite(test_run_suite, this.delta_temp_test_run_id);
+    console.log('#### TEST SUITE TEMP ID ###');
+    console.log(tempId);
+
+    // this.delta_test_run.then(value => {
+    //   var test_run_suite = {
+    //     name: suite.title,
+    //     test_type: this.options.testType,
+    //     start_datetime: new Date(),
+    //     test_run_id: this.delta_test_run.id,
+    //     project: this.options.project
+    //   };
+
+    //   // let response = this.createTestSuiteHistory(test_run_suite);
+    //   // this.delta_test_suite = response;
+    //   // log.info(response);
+    //   // log.info(response);
+    // });
 
     // var test_run_suite = {
     //   name: suite.title,
@@ -220,17 +244,15 @@ export default class DeltaService extends WDIOReporter {
   }
   onHookStart() {}
   onHookEnd() {}
-  async onTestStart(test) {
+  onTestStart(test) {
     // const testRun = JSON.parse(fs.readFileSync('./.delta_service/testRun.json'));
-
-    var test_history = {
-      name: test.title,
-      start_datetime: new Date(),
-      test_suite_id: this.delta_test_suite.test_suite_id,
-      test_run_id: this.delta_test_run.id,
-      test_suite_history_id: this.delta_test_suite.test_suite_history_id
-    };
-
+    // var test_history = {
+    //   name: test.title,
+    //   start_datetime: new Date(),
+    //   test_suite_id: this.delta_test_suite.test_suite_id,
+    //   test_run_id: this.delta_test_run.id,
+    //   test_suite_history_id: this.delta_test_suite.test_suite_history_id
+    // };
     // var response = await this.createTestHistory(test_history);
     // this.delta_test = response;
     // fs.writeFileSync(path.resolve('./.delta_service/test.json'), JSON.stringify(response));
@@ -240,20 +262,20 @@ export default class DeltaService extends WDIOReporter {
   onTestSkip(test) {}
   onTestEnd() {}
 
-  async onSuiteEnd(suite) {
-    var test_suite_history = {
-      test_suite_history_id: this.delta_test_suite.test_suite_history_id,
-      end_datetime: new Date(),
-      test_suite_status: suite.error ? 'Failed' : 'Successful',
-      data: {
-        file: suite.file
-      }
-    };
+  onSuiteEnd(suite) {
+    // var test_suite_history = {
+    //   test_suite_history_id: this.delta_test_suite.test_suite_history_id,
+    //   end_datetime: new Date(),
+    //   test_suite_status: suite.error ? 'Failed' : 'Successful',
+    //   data: {
+    //     file: suite.file
+    //   }
+    // };
     // var response = await this.updateSuiteHistory(test_suite_history);
     // log.info(response);
   }
 
-  async onRunnerEnd() {
+  onRunnerEnd() {
     let response: any;
     // const testRun = JSON.parse(fs.readFileSync('./.delta_service/testRun.json'));
     // let launch;

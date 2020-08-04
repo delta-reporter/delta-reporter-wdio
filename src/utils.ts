@@ -18,6 +18,13 @@ export const promiseErrorHandler = (promise: Promise<any>) => {
   });
 };
 
+export const getRejectAnswer = (tempId, error) => {
+  return {
+    tempId,
+    promise: Promise.reject(error)
+  };
+};
+
 export const isEmpty = (object: object) => !object || Object.keys(object).length === 0;
 // /**
 //  * Limit the length of an arbitrary variable of any type, suitable for being logged or displayed
