@@ -85,16 +85,11 @@ class DeltaService {
     if (!launchId || isNaN(Number(launchId))) {
       log.info('No Launch detected, creating a new one...');
       var date = new Date();
-      var name =
-        this.options.testType +
-        ' | ' +
-        date.toDateString() +
-        ' - ' +
-        date.getHours() +
-        ':' +
-        date.getMinutes() +
-        ':' +
-        date.getSeconds();
+      let hours = date.getHours() < 10 ? '0' + date.getHours() : date.getHours();
+      let minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
+      let seconds = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds();
+      var name = this.options.testType + ' | ' + date.toDateString() + ' - ' + hours + ':' + minutes + ':' + seconds;
+
       var launch = {
         name: name,
         project: this.options.project
@@ -130,6 +125,18 @@ class DeltaService {
 
   async beforeSuite(suite) {
     const testRun = JSON.parse(fs.readFileSync('./.delta_service/testRun.json'));
+    try {
+      let spectreTestRunURL = fs.readFileSync('./.spectre_test_run_url.json');
+      log.info(`Spectre URL: ${spectreTestRunURL}`);
+      var test_run_payload = {
+        test_run_id: testRun.id,
+        data: { spectre_test_run_url: spectreTestRunURL.toString() }
+      };
+      var response = await this.updateTestRun(test_run_payload);
+      log.info(response);
+    } catch {
+      log.info('No Spectre URL found');
+    }
 
     var test_run_suite = {
       name: suite.title,
@@ -201,10 +208,7 @@ class DeltaService {
     var test_run = {
       test_run_id: testRun.id,
       end_datetime: new Date(),
-      test_run_status: exitCode ? 'Failed' : 'Passed',
-      data: {
-        capabilities
-      }
+      test_run_status: exitCode ? 'Failed' : 'Passed'
     };
     var response = await this.updateTestRun(test_run);
     log.info(response);
