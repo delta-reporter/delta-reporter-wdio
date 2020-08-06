@@ -130,7 +130,7 @@ class DeltaService {
       log.info(`Spectre URL: ${spectreTestRunURL}`);
       var test_run_payload = {
         test_run_id: testRun.id,
-        data: { spectre_test_run_url: spectreTestRunURL }
+        data: { spectre_test_run_url: spectreTestRunURL.toString() }
       };
       var response = await this.updateTestRun(test_run_payload);
       log.info(response);
