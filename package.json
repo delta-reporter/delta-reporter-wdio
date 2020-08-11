@@ -2,7 +2,7 @@
   "name": "@delta-reporter/wdio-delta-reporter-service",
   "version": "1.0.8",
   "description": "Delta Reporter service for WebdriverIO",
-  "main": "lib/src/index.js",
+  "main": "lib/src/reporter.js",
   "files": [
     "*.md",
     "lib/src"

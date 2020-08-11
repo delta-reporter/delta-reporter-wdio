@@ -32,4 +32,12 @@ describe('Basic validations', function() {
   it('Should check that the floating menu page is loaded', () => {
     browser.url('http://the-internet.herokuapp.com/floating_menu');
   });
+
+  xit('Should check that the floating menu page is loaded2', () => {
+    browser.url('http://the-internet.herokuapp.com/floating_menu');
+  });
+
+  xit('Should check that the floating menu page is loaded3', () => {
+    browser.url('http://the-internet.herokuapp.com/floating_menu');
+  });
 });

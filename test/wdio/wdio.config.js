@@ -2,6 +2,7 @@ var path = require('path');
 const fs = require('fs');
 const video = require('wdio-video-reporter');
 const DeltaService = require('../../lib/src');
+const DeltaReporter = require('../../lib/src');
 
 function getLatestFile({ directory, extension }, callback) {
   fs.readdir(directory, (_, dirlist) => {
@@ -41,6 +42,7 @@ exports.config = {
   reporters: [
     'dot',
     'spec',
+    DeltaReporter,
     [
       video,
       {
@@ -84,9 +86,9 @@ exports.config = {
       const file_name = 'screenshot.png';
       const outputFile = path.join(__dirname, file_name);
       browser.saveScreenshot(outputFile);
-      browser.sendFileToTest('img', fs.createReadStream(outputFile));
+      browser.sendFileToTest('img', outputFile);
       getLatestFile({ directory: browser.options.outputDir + '/_results_', extension: 'mp4' }, (filename = null) => {
-        browser.sendFileToTest('video', fs.createReadStream(filename), 'Video captured during test execution');
+        browser.sendFileToTest('video', filename, 'Video captured during test execution');
       });
     }
   }
