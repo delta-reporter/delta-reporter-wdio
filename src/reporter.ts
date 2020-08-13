@@ -1,10 +1,6 @@
 import WDIOReporter from '@wdio/reporter';
 
 export interface ReporterOptions {
-  outputDir?: string;
-  fileName?: string;
-  embedImages?: boolean;
-  screenshotStrategy?: string;
   stdout?: boolean;
   configFile;
   logFile;
@@ -22,13 +18,13 @@ class DeltaReporter extends WDIOReporter {
     super(options);
   }
 
-  onTestStart(test) {}
+  //   onTestStart(test) {}
 
-  onAfterCommand(command) {}
+  //   onAfterCommand(command) {}
 
-  onRunnerEnd(runner) {}
+  //   onRunnerEnd(runner) {}
 
-  prepareJson(runner) {}
+  //   prepareJson(runner) {}
 }
 
 export default DeltaReporter;

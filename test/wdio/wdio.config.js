@@ -1,8 +1,8 @@
 var path = require('path');
 const fs = require('fs');
 const video = require('wdio-video-reporter');
-const DeltaService = require('../../lib/src');
-const DeltaReporter = require('../../lib/src');
+const DeltaService = require('../../lib/src/service');
+const DeltaReporter = require('../../lib/src/reporter');
 
 function getLatestFile({ directory, extension }, callback) {
   fs.readdir(directory, (_, dirlist) => {
@@ -42,7 +42,7 @@ exports.config = {
   reporters: [
     'dot',
     'spec',
-    DeltaReporter,
+    [DeltaReporter, {}],
     [
       video,
       {
