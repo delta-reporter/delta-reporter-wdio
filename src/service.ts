@@ -95,7 +95,7 @@ class DeltaService {
     };
 
     response = await this.requests.createTestSuiteHistory(test_run_suite);
-    fs.writeFileSync(path.resolve(`./.delta_service/${suite.title.replace(' ', '-')}.json`), JSON.stringify(response));
+    fs.writeFileSync(path.resolve(`./.delta_service/${suite.title.replace(/ /g, '-')}.json`), JSON.stringify(response));
     this.delta_test_suite = response;
     log.info(response);
   }

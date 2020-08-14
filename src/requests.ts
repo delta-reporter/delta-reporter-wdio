@@ -46,7 +46,7 @@ class DeltaRequests {
   }
 
   createSkippedTestHistory(data: object, suite: string) {
-    const test_suite = JSON.parse(fs.readFileSync(`./.delta_service/${suite.replace(' ', '-')}.json`));
+    const test_suite = JSON.parse(fs.readFileSync(`./.delta_service/${suite.replace(/ /g, '-')}.json`));
     data['test_suite_id'] = test_suite.test_suite_id;
     data['test_suite_history_id'] = test_suite.test_suite_history_id;
     data['status'] = 'Skipped';
