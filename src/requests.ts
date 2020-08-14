@@ -1,19 +1,19 @@
 import * as DeltaUtils from './utils';
 const RestClientDelta = require('./rest');
-import logger from '@wdio/logger';
-const log = logger('wdio-delta-reporter-service');
+const FormData = require('form-data');
+const fs = require('fs');
 
 class DeltaRequests {
   delta_promises: any;
   restClient: any;
   delta_launch_id: number;
   delta_test_run_id: number;
+  test_suite_history_id: number;
+  test_suite_id: number;
 
   constructor(host) {
     this.delta_promises = {};
-    this.restClient = new RestClientDelta({
-      baseURL: host
-    });
+    this.restClient = new RestClientDelta({ baseURL: host });
   }
 
   getLaunchById(id: number) {
@@ -33,10 +33,23 @@ class DeltaRequests {
 
   createTestSuiteHistory(data: object) {
     const url = ['api/v1/test_suite_history'];
-    return this.restClient.create(url, data);
+    let response = this.restClient.create(url, data);
+    this.test_suite_id = response.test_suite_id;
+    this.test_suite_history_id = response.test_suite_history_id;
+
+    return response;
   }
 
   createTestHistory(data: object) {
+    const url = ['api/v1/test_history'];
+    return this.restClient.create(url, data);
+  }
+
+  createSkippedTestHistory(data: object, suite: string) {
+    const test_suite = JSON.parse(fs.readFileSync(`./.delta_service/${suite.replace(' ', '-')}.json`));
+    data['test_suite_id'] = test_suite.test_suite_id;
+    data['test_suite_history_id'] = test_suite.test_suite_history_id;
+    data['status'] = 'Skipped';
     const url = ['api/v1/test_history'];
     return this.restClient.create(url, data);
   }
@@ -61,124 +74,14 @@ class DeltaRequests {
     return this.restClient.update(url, data);
   }
 
-  // let delta_promises: any;
-
-  // this.delta_promises = {};
-
-  startLaunch(launchPayload: any) {
-    let tempId = DeltaUtils.getUniqId();
-    this.delta_promises[tempId] = DeltaUtils.storeNewPromise((resolve, reject) => {
-      this.createLaunch(launchPayload).then(
-        response => {
-          this.delta_promises[tempId].realId = response.id;
-          this.delta_launch_id = response.id;
-          resolve(response);
-        },
-        error => {
-          console.dir(error);
-          reject(error);
-        }
-      );
-    });
-    return {
-      tempId,
-      promise: this.delta_promises[tempId].promiseStart
-    };
+  sendFile(test_history_id: number, type: string, file: any, description?: string) {
+    const url = ['api/v1/file_receiver_test_history/' + test_history_id];
+    const form = new FormData();
+    form.append('type', type);
+    form.append('file', file);
+    description ? form.append('description', description) : form.append('description', '');
+    return this.restClient.create(url, form, { headers: form.getHeaders() });
   }
-
-  startTestRun(testRunPayload: any, launchTempId?: string) {
-    // DeltaUtils.getRejectAnswer();
-    if (launchTempId) {
-      const launchObj = this.delta_promises[launchTempId];
-      console.log(launchObj);
-      if (!launchObj) {
-        return DeltaUtils.getRejectAnswer(launchTempId, new Error(`Launch "${launchTempId}" not found`));
-      }
-      if (launchObj.finishSend) {
-        const err = new Error(`Launch "${launchTempId}" is already finished, you can not add an item to it`);
-        return DeltaUtils.getRejectAnswer(launchTempId, err);
-      }
-      let launchPromise = launchObj.promiseStart;
-      let tempId = DeltaUtils.getUniqId();
-      launchPromise.then(() => {
-        const generated_launch_id = this.delta_promises[launchTempId].realId;
-        testRunPayload.launch_id = generated_launch_id;
-        // let tempId = DeltaUtils.getUniqId();
-        console.log('#### TEST RUN PAYLOAD - INSIDE PROMISE ####');
-        console.log(testRunPayload);
-        this.delta_promises[tempId] = DeltaUtils.storeNewPromise((resolve, reject) => {
-          this.createTestRun(testRunPayload).then(
-            response => {
-              //   this.delta_test_run = response;
-              //   log.info(response);
-              //   return response
-              this.delta_promises[tempId].realId = response.id;
-              this.delta_test_run_id = response.id;
-              resolve(response);
-            },
-            error => {
-              console.dir(error);
-              reject(error);
-            }
-          );
-        });
-        // return {
-        //     tempId,
-        //     promise: this.delta_promises[tempId].promiseStart
-        //   };
-      });
-      return {
-        tempId
-        // promise: this.delta_promises[tempId].promiseStart
-      };
-    }
-  }
-
-  startTestSuite(testSuitePayload: any, testRunTempId: string) {
-    // DeltaUtils.getRejectAnswer();
-    const testRunObj = this.delta_promises[testRunTempId];
-    console.log(testRunObj);
-    if (!testRunObj) {
-      console.log('#### TEST RUN REAL ID');
-      console.log(this.delta_promises[testRunTempId].realId);
-      return DeltaUtils.getRejectAnswer(testRunTempId, new Error(`Test Run "${testRunTempId}" not found`));
-    }
-    if (testRunObj.finishSend) {
-      const err = new Error(`Test Run "${testRunTempId}" is already finished, you can not add an item to it`);
-      return DeltaUtils.getRejectAnswer(testRunTempId, err);
-    }
-    let launchPromise = testRunObj.promiseStart;
-    launchPromise.then(() => {
-      const generated_test_run_id = this.delta_promises[testRunTempId].realId;
-      testSuitePayload.test_run_id = generated_test_run_id;
-      console.log('#### TEST SUITE PAYLOAD - INSIDE PROMISE ####');
-      console.log(testSuitePayload);
-      this.createTestSuiteHistory(testSuitePayload).then(response => {
-        //   this.delta_test_run = response;
-        log.info(response);
-        return response;
-      });
-    });
-  }
-
-  // let tempId = DeltaUtils.getUniqId();
-  // this.delta_promises[tempId] = DeltaUtils.storeNewPromise((resolve, reject) => {
-  //   this.createLaunch(launchPayload).then(
-  //     response => {
-  //       this.delta_promises[tempId].realId = response.id;
-  //       this.delta_launch_id = response.id;
-  //       resolve(response);
-  //     },
-  //     error => {
-  //       console.dir(error);
-  //       reject(error);
-  //     }
-  //   );
-  // });
-  // return {
-  //   tempId,
-  //   promise: this.delta_promises[tempId].promiseStart
-  // };
 }
 
 module.exports = DeltaRequests;

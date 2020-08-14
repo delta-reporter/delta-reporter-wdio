@@ -1,7 +1,8 @@
 var path = require('path');
 const fs = require('fs');
 const video = require('wdio-video-reporter');
-const DeltaService = require('../../lib/src');
+const DeltaReporter = require('../../lib/src/reporter');
+const DeltaService = require('../../lib/src/service');
 
 function getLatestFile({ directory, extension }, callback) {
   fs.readdir(directory, (_, dirlist) => {
@@ -15,8 +16,14 @@ function getLatestFile({ directory, extension }, callback) {
   });
 }
 
+let delta_config = {
+  host: 'http://localhost:5000',
+  project: 'Delta Reporter',
+  testType: 'End to End'
+};
+
 exports.config = {
-  specs: ['./test/wdio/DeltaReporterClient.test.ts'],
+  specs: ['./test/wdio/DeltaReporterClient.test.ts', './test/wdio/DeltaReporterClient2.test2.ts'],
   capabilities: [
     {
       browserName: 'chrome'
@@ -48,25 +55,9 @@ exports.config = {
         videoSlowdownMultiplier: 3 // Higher to get slower videos, lower for faster videos [Value 1-100]
       }
     ],
-    [
-      DeltaService,
-      {
-        host: 'http://localhost:5000',
-        project: 'Delta Reporter',
-        testType: 'End to End'
-      }
-    ]
+    [DeltaReporter, delta_config]
   ],
-  services: [
-    'docker'
-    // [
-    //   new DeltaService({
-    //     host: 'http://localhost:5000',
-    //     project: 'Delta Reporter',
-    //     testType: 'End to End'
-    //   })
-    // ]
-  ],
+  services: ['docker', [new DeltaService(delta_config)]],
   dockerOptions: {
     image: 'selenium/standalone-chrome',
     healthCheck: 'http://localhost:4444',
