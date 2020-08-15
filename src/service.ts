@@ -58,13 +58,17 @@ class DeltaService {
 
   async before(capabilities, specs) {
     browser.addCommand('sendFileToTest', async (type, file, description?) => {
-      let response = await this.requests.sendFile(
-        this.delta_test.test_history_id,
-        type,
-        fs.createReadStream(file),
-        description
-      );
-      log.info(response);
+      try {
+        let response = await this.requests.sendFile(
+          this.delta_test.test_history_id,
+          type,
+          fs.createReadStream(file),
+          description
+        );
+        log.info(response);
+      } catch (e) {
+        console.error(e);
+      }
     });
   }
 
@@ -96,6 +100,7 @@ class DeltaService {
 
     response = await this.requests.createTestSuiteHistory(test_run_suite);
     fs.writeFileSync(path.resolve(`./.delta_service/${suite.title.replace(/ /g, '-')}.json`), JSON.stringify(response));
+    log.info(`Test file ${suite.title.replace(/ /g, '-')}.json written`);
     this.delta_test_suite = response;
     log.info(response);
   }
