@@ -4,6 +4,7 @@ const RestClientDelta = require('./rest');
 const FormData = require('form-data');
 const fs = require('fs');
 const path = require('path');
+const UniqId = require('uniqid');
 const log = logger('wdio-delta-reporter-service');
 
 class DeltaRequests {
@@ -14,6 +15,8 @@ class DeltaRequests {
   delta_test_run_id: number;
   test_suite_history_id: number;
   test_suite_id: number;
+  temp_promises: {} = {};
+  temp_suite_history: {};
 
   constructor(host) {
     this.delta_promises = {};
@@ -63,14 +66,17 @@ class DeltaRequests {
       let test_run_suite = {
         name: suite,
         test_type: options.testType,
-        start_datetime: new Date(),
+        // start_datetime: new Date(),
         test_run_id: data.test_run_id,
         project: options.project
       };
 
-      let response = await this.createTestSuiteHistory(test_run_suite);
-      fs.writeFileSync(path.resolve(`./.delta_service/${suite.replace(/ /g, '-')}.json`), JSON.stringify(response));
-      log.info(`Test file ${suite.replace(/ /g, '-')}.json written`);
+      this.temp_suite_history = this.startSuiteHistory(test_run_suite);
+      // let response = await this.createTestSuiteHistory(test_run_suite);
+      // fs.writeFileSync(path.resolve(`./.delta_service/${suite.replace(/ /g, '-')}.json`), JSON.stringify(response));
+      // log.info(`Test file ${suite.replace(/ /g, '-')}.json written`);
+
+      let response = await this.temp_suite_history['promise'];
 
       data['test_suite_id'] = response.test_suite_id;
       data['test_suite_history_id'] = response.test_suite_history_id;
@@ -120,6 +126,66 @@ class DeltaRequests {
       flag = false;
     }
     return flag;
+  }
+
+  getUniqId() {
+    return UniqId();
+  }
+
+  getNewItemObj(startPromiseFunc) {
+    let resolveFinish;
+    let rejectFinish;
+    const obj = {
+      promiseStart: new Promise(startPromiseFunc),
+      realId: '',
+      childrens: [],
+      finishSend: false,
+      promiseFinish: new Promise((resolve, reject) => {
+        resolveFinish = resolve;
+        rejectFinish = reject;
+      }),
+      resolveFinish: null,
+      rejectFinish: null
+    };
+    obj.resolveFinish = resolveFinish;
+    obj.rejectFinish = rejectFinish;
+    return obj;
+  }
+
+  startSuiteHistory(suiteHistoryPayload) {
+    const tempId = this.getUniqId();
+
+    if (Object.entries(this.temp_promises).length > 0) {
+      this.temp_promises[tempId] = this.getNewItemObj(resolve => resolve(suiteHistoryPayload));
+      fs.writeFileSync(
+        path.resolve(`./.delta_service/${suiteHistoryPayload.name.replace(/ /g, '-')}.json`),
+        JSON.stringify(suiteHistoryPayload)
+      );
+      log.info(`Test file ${suiteHistoryPayload.name.replace(/ /g, '-')}.json written`);
+      this.test_suite_id = suiteHistoryPayload.test_suite_id;
+      this.test_suite_history_id = suiteHistoryPayload.test_suite_history_id;
+    } else {
+      const suiteHistoryData = Object.assign({ start_datetime: new Date() }, suiteHistoryPayload);
+
+      this.temp_promises[tempId] = this.getNewItemObj((resolve, reject) => {
+        const url = ['api/v1/test_suite_history'];
+        this.restClient.create(url, suiteHistoryData).then(
+          response => {
+            this.temp_promises[tempId].test_suite_id = response.test_suite_id;
+            this.temp_promises[tempId].test_suite_history_id = response.test_suite_history_id;
+            resolve(response);
+          },
+          error => {
+            console.dir(error);
+            reject(error);
+          }
+        );
+      });
+    }
+    return {
+      tempId,
+      promise: this.temp_promises[tempId].promiseStart
+    };
   }
 }
 
