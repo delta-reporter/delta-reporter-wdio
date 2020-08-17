@@ -2,7 +2,7 @@
 
 This service is intended to send information to Delta Reporter
 
-It consists in a mix between a WebdriverIO Servicer and Reporter, so it needs to be declared in both spaces
+It consists of a mix between a WebdriverIO Service and Reporter, so it needs to be declared in both spaces
 
 ### Installation ###
 
