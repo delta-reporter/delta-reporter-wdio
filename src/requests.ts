@@ -3,6 +3,7 @@ import logger from '@wdio/logger';
 const RestClientDelta = require('./rest');
 const FormData = require('form-data');
 const fs = require('fs');
+const path = require('path');
 const log = logger('wdio-delta-reporter-service');
 
 class DeltaRequests {
@@ -48,14 +49,34 @@ class DeltaRequests {
     return this.restClient.create(url, data);
   }
 
-  createSkippedTestHistory(data: object, suite: string) {
+  async createSkippedTestHistory(data: any, suite: string, options?: any) {
+    let url = ['api/v1/test_history'];
     log.info(`Reading test file ${suite.replace(/ /g, '-')}.json`);
-    const test_suite = JSON.parse(fs.readFileSync(`./.delta_service/${suite.replace(/ /g, '-')}.json`));
-    data['test_suite_id'] = test_suite.test_suite_id;
-    data['test_suite_history_id'] = test_suite.test_suite_history_id;
-    data['status'] = 'Skipped';
-    const url = ['api/v1/test_history'];
-    return this.restClient.create(url, data);
+    if (this.checkFileExistsSync(`./.delta_service/${suite.replace(/ /g, '-')}.json`)) {
+      const test_suite = JSON.parse(fs.readFileSync(`./.delta_service/${suite.replace(/ /g, '-')}.json`));
+      data['test_suite_id'] = test_suite.test_suite_id;
+      data['test_suite_history_id'] = test_suite.test_suite_history_id;
+      data['status'] = 'Skipped';
+      return await this.restClient.create(url, data);
+    } else {
+      log.info(`Test file ${suite.replace(/ /g, '-')}.json doesn't exists`);
+      let test_run_suite = {
+        name: suite,
+        test_type: options.testType,
+        start_datetime: new Date(),
+        test_run_id: data.test_run_id,
+        project: options.project
+      };
+
+      let response = await this.createTestSuiteHistory(test_run_suite);
+      fs.writeFileSync(path.resolve(`./.delta_service/${suite.replace(/ /g, '-')}.json`), JSON.stringify(response));
+      log.info(`Test file ${suite.replace(/ /g, '-')}.json written`);
+
+      data['test_suite_id'] = response.test_suite_id;
+      data['test_suite_history_id'] = response.test_suite_history_id;
+      data['status'] = 'Skipped';
+      return await this.restClient.create(url, data);
+    }
   }
 
   updateTestHistory(data: object) {
@@ -89,6 +110,16 @@ class DeltaRequests {
     } else {
       throw `This type of file: ${type} is not supported, please specify one of this: ${this.supportedFileTypes}`;
     }
+  }
+
+  checkFileExistsSync(filepath) {
+    let flag = true;
+    try {
+      fs.accessSync(filepath, fs.constants.F_OK);
+    } catch (e) {
+      flag = false;
+    }
+    return flag;
   }
 }
 

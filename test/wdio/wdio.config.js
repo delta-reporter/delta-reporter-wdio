@@ -23,7 +23,11 @@ let delta_config = {
 };
 
 exports.config = {
-  specs: ['./test/wdio/DeltaReporterClient.test.ts', './test/wdio/DeltaReporterClient2.test2.ts'],
+  specs: [
+    // './test/wdio/DeltaReporterClient.test.ts',
+    // './test/wdio/DeltaReporterClient2.test2.ts',
+    './test/wdio/DeltaReporterClient3.test3.ts'
+  ],
   capabilities: [
     {
       browserName: 'chrome'

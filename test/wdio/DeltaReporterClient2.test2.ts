@@ -7,7 +7,7 @@ describe('Basic validations2', function() {
     browser.url('http://the-internet.herokuapp.com/');
   });
 
-  it('Should check that the nested frames page is loaded2', () => {
+  xit('Should check that the nested frames page is loaded2', () => {
     browser.url('http://the-internet.herokuapp.com/nested_frames');
     browser.pause(1000);
     browser.url('http://the-internet.herokuapp.com/slow');

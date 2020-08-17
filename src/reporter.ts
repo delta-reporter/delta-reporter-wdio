@@ -32,6 +32,7 @@ export default class DeltaReporter extends WDIOReporter {
 
   onSuiteStart(suite) {
     this.suite_title = suite.title;
+    log.info(`Test Suite start at time: ${new Date()}`);
   }
   onHookStart() {}
   onHookEnd() {}
@@ -46,7 +47,9 @@ export default class DeltaReporter extends WDIOReporter {
       test_run_id: testRun.id
     };
 
-    let response = await this.requests.createSkippedTestHistory(test_history, this.suite_title);
+    log.info(`Skipping test at time: ${new Date()}`);
+
+    let response = await this.requests.createSkippedTestHistory(test_history, this.suite_title, this.options);
     log.info(response);
   }
 
