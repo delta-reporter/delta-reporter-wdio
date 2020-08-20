@@ -1,8 +1,8 @@
 {
   "name": "@delta-reporter/wdio-delta-reporter-service",
-  "version": "1.0.8",
+  "version": "1.1.1",
   "description": "Delta Reporter service for WebdriverIO",
-  "main": "lib/src/index.js",
+  "main": "lib/src/service.js",
   "files": [
     "*.md",
     "lib/src"
@@ -10,7 +10,7 @@
   "scripts": {
     "clean": "rimraf lib .tmp",
     "build": "tsc",
-    "test": "./node_modules/.bin/tsc && ./node_modules/.bin/wdio ./test/wdio/wdio.config.js"
+    "test": "npm run clean && ./node_modules/.bin/tsc && ./node_modules/.bin/wdio ./test/wdio/wdio.config.js"
   },
   "husky": {
     "hooks": {
@@ -62,6 +62,7 @@
     "axios": "^0.19.2",
     "axios-retry": "^3.1.8",
     "husky": "^3.0.8",
+    "uniqid": "^5.2.0",
     "wdio-mocha-framework": "^0.6.4",
     "wdio-video-reporter": "^3.0.0"
   },
