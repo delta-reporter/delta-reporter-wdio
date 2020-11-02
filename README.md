@@ -1,10 +1,10 @@
 # Delta Reporter WebdriverIO Service #
 
-This service is intended to send information to Delta Reporter
+A WebdriverIO reporter plugin to create [Delta reports] (https://github.com/delta-reporter/delta-reporter)
 
-It consists of a mix between a WebdriverIO Service and Reporter, so it needs to be declared in both spaces
 
-![Screenshot of Delta reporter](https://github.com/delta-reporter/delta-reporter-wdio/blob/docs/src/docs/delta-reporter.png)
+![Screenshot of Delta reporter](/src/docs/delta-reporter.png)
+
 
 ### Installation ###
 
@@ -17,6 +17,7 @@ npm i @delta-reporter/wdio-delta-reporter-service
 
 ### Configuration ###
 
+Delta reporter WebdriverIO plugin consists of a mix between a [WebdriverIO Service](https://github.com/webdriverio/webdriverio/tree/master/packages/webdriverio) and [Reporter](https://github.com/webdriverio/webdriverio/tree/master/packages/wdio-reporter), so it needs to be declared as a reporter and as a service in config file.
 
 ```js
 const DeltaReporter = require('@delta-reporter/wdio-delta-reporter-service/lib/src/reporter');
