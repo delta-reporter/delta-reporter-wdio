@@ -1,6 +1,9 @@
 # Delta Reporter WebdriverIO Service #
 
-A WebdriverIO reporter plugin to create [Delta reports] (https://github.com/delta-reporter/delta-reporter)
+
+A WebdriverIO reporter plugin to create [Delta reports](https://github.com/delta-reporter/delta-reporter)
+
+
 
 
 ![Screenshot of Delta reporter](/src/docs/delta-reporter.png)
@@ -17,7 +20,9 @@ npm i @delta-reporter/wdio-delta-reporter-service
 
 ### Configuration ###
 
+
 Delta reporter WebdriverIO plugin consists of a mix between a [WebdriverIO Service](https://github.com/webdriverio/webdriverio/tree/master/packages/webdriverio) and [Reporter](https://github.com/webdriverio/webdriverio/tree/master/packages/wdio-reporter), so it needs to be declared as a reporter and as a service in config file.
+
 
 ```js
 const DeltaReporter = require('@delta-reporter/wdio-delta-reporter-service/lib/src/reporter');
@@ -34,17 +39,21 @@ exports.config = {
   reporters: [
     [DeltaReporter, delta_config]
   ],
+  // ...
   services: [new DeltaService(delta_config)],
   // ...
 }
 ```
 
-Its possible to send images and videos to Delta Reporter, for this use the `sendFileToTest` command, the parameters are `type`, `file` and `description`:
+
+### Add screenshots and videos ###
+
+Screenshots and videos can be attached to the report by using the `sendFileToTest` command in afterTest hook in wdio config file. The parameters are `type`, `file` and `description`:
 - `type`: Can be `img` or `video`
 - `file`: Path to the file to be uploaded
 - `description`: Optional value that will be displayed in the media container in Delta Reporter
 
-Here is an example using this plugin along with [Video Reporter](https://github.com/presidenten/wdio-video-reporter)
+Below is an example of wdio config file using this plugin along with [Video Reporter](https://github.com/presidenten/wdio-video-reporter), so that Delta Reporter is showing screenshots and videos of failed tests:
 
 ```js
 var path = require('path');
@@ -53,6 +62,7 @@ const video = require('wdio-video-reporter');
 const DeltaReporter = require('@delta-reporter/wdio-delta-reporter-service/lib/src/reporter');
 const DeltaService = require("@delta-reporter/wdio-delta-reporter-service");
 
+// ...
 
 function getLatestFile({ directory, extension }, callback) {
   fs.readdir(directory, (_, dirlist) => {
@@ -72,22 +82,31 @@ let delta_config = {
   testType: 'Test Type'
 };
 
+// ...
+
 exports.config = {
   // ...
   reporters: [
     [DeltaReporter, delta_config]
   ],
+  // ...
   services: [new DeltaService(delta_config)],
+
+ // ...
+
   afterTest(test) {
     if (test.passed === false) {
       const file_name = 'screenshot.png';
       const outputFile = path.join(__dirname, file_name);
+
       browser.saveScreenshot(outputFile);
       browser.sendFileToTest('img', outputFile);
+
       getLatestFile({ directory: browser.options.outputDir + '/_results_', extension: 'mp4' }, (filename = null) => {
         browser.sendFileToTest('video', filename, 'Video captured during test execution');
       });
     }
   }
+
   // ...
 }
