@@ -1,4 +1,4 @@
-# Delta Reporter WebdriverIO Service #
+# Delta Reporter WebdriverIO Service
 ====================
 
 
@@ -57,13 +57,14 @@ exports.config = {
 
 ## Add screenshots and videos
 
-Screenshots and videos can be attached to the report by using the `sendFileToTest` command in afterTest hook in wdio config file. The parameters are `type`, `file` and `description`:
+Screenshots can be attached to the report by using the `sendFileToTest` command in afterTest hook in wdio config file. The parameters are `type`, `file` and `description`:
 - `type`: Can be `img` or `video`
 - `file`: Path to the file to be uploaded
 - `description`: Optional value that will be displayed in the media container in Delta Reporter
 
 
 As shown in the example above, when this function is called, adn the test is failing, a screenshot image will be attached to the Delta report.
+
 
 ```js
  afterTest(test) {
@@ -77,7 +78,10 @@ As shown in the example above, when this function is called, adn the test is fai
   }
 ```
 
+
 Below is an example of all pieces needed in wdio config file to use this plugin along with [Video Reporter](https://github.com/presidenten/wdio-video-reporter), so that Delta Reporter is showing screenshots and videos of failed tests:
+
+
 
 ```js
 var path = require('path');
@@ -116,7 +120,9 @@ exports.config = {
   // ...
   services: [new DeltaService(delta_config)],
 
- // ...
+
+  // ...
+
 
   afterTest(test) {
     if (test.passed === false) {
@@ -133,5 +139,6 @@ exports.config = {
   }
 
   // ...
+
 }
 ```
