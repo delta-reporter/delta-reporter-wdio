@@ -4,7 +4,7 @@ This service is intended to send information to Delta Reporter
 
 It consists of a mix between a WebdriverIO Service and Reporter, so it needs to be declared in both spaces
 
-![Screenshot of Delta reporter](https://github.com/delta-reporter/delta-reporter-wdio/blob/master/src/docs/delta-reporter.png)
+![Screenshot of Delta reporter](https://github.com/delta-reporter/delta-reporter-wdio/blob/docs/src/docs/delta-reporter.png)
 
 ### Installation ###
 
