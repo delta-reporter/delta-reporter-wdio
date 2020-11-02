@@ -1,5 +1,6 @@
 # Delta Reporter WebdriverIO Service
-====================
+
+
 
 
 > A WebdriverIO reporter plugin to create [Delta reports](https://github.com/delta-reporter/delta-reporter)
