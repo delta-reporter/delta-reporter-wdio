@@ -149,8 +149,9 @@ For each test run, Delta plugin is listening for DELTA_LAUNCH_ID. There are two 
 
 - Local run: No need to do anything, you can just run your wdio command (`./node_modules/.bin/wdio ./wdio.conf.js`) and DELTA_LAUNCH_ID will be generated automatically for you, so your test results appear in Delta Reporter in real time.
 
-- CI run: If it's your tests job, you might need to define DELTA_LAUNCH_ID as a parameter. And then inside your stage you will need to initialize it. 
-Below is an example for Jenkins job:
+- CI run: If it's your tests job, you will have to define DELTA_LAUNCH_ID as a parameter. Then inside your stage you will need to initialize it by calling a `/api/v1/launch` endpoint, then running your tests with `DELTA_LAUNCH_ID=${DELTA_LAUNCH_ID}` pre-pending. The initialization is done once, so when you are running multiple test types in the same build (say, UI tests, API tests, Unit tests), those tests are gathered under one "Launch" on Delta Reporter.
+
+Below is an example of code for config file for Jenkins job:
 
 ```groovy
 // ...
