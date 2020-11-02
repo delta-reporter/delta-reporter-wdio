@@ -105,9 +105,9 @@ function getLatestFile({ directory, extension }, callback) {
 }
 
 let delta_config = {
-  host: 'delta_host',
-  project: 'Project Name',
-  testType: 'Test Type'
+  host: 'delta_host', // put your Delta Core url here
+  project: 'Project Name', // Name of your project
+  testType: 'Test Type' // eg., End to End, E2E, Frontend Acceptance Tests
 };
 
 // ...
@@ -141,4 +141,41 @@ exports.config = {
   // ...
 
 }
+```
+
+## Usage
+
+For each test run, Delta plugin is listening for DELTA_LAUNCH_ID. There are two main cases:
+
+- Local run: No need to do anything, you can just run your wdio command (`./node_modules/.bin/wdio ./wdio.conf.js`) and DELTA_LAUNCH_ID will be generated automatically for you, so your test results appear in Delta Reporter in real time.
+
+- CI run: If it's your tests job, you might need to define DELTA_LAUNCH_ID as a parameter. And then inside your stage you will need to initialize it. 
+Below is an example for Jenkins job:
+
+```groovy
+// ...
+  parameters {
+      string defaultValue: '', description: 'Launch ID sent by a pipeline, leave it blank', name: 'DELTA_LAUNCH_ID', trim: false
+  }
+
+// ...
+
+  stage('Run WDIO tests') {
+    environment {
+      DELTA_LAUNCH_ID = ""
+    }
+    steps {
+      container('jenkins-node-worker') {
+        script {
+          try {
+            DELTA_LAUNCH_ID=sh(script: "curl -s --header \"Content-Type: application/json\" --request POST --data '{\"name\": \"${JOB_NAME} | ${BUILD_NUMBER} | Wdio Tests\", \"project\": \"Your project\"}' https://delta-core-url/api/v1/launch | python -c 'import sys, json; print(json.load(sys.stdin)[\"id\"])';", returnStdout: true)
+          } catch (Exception e) {
+              echo 'Couldn\'t start launch on Delta Reporter: ' + e
+          }
+          
+          sh "DELTA_LAUNCH_ID=${DELTA_LAUNCH_ID} TEST_TYPE='Frontend Acceptance Tests' ./node_modules/.bin/wdio ./wdio.conf.js"
+        }
+      }
+    }  
+  }
 ```
