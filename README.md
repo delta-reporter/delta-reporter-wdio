@@ -6,7 +6,7 @@
 > A WebdriverIO reporter plugin to create [Delta reports](https://github.com/delta-reporter/delta-reporter)
 
 
-![Screenshot of Delta reporter](/src/docs/delta-reporter.png)
+![Screenshot of Delta reporter](https://raw.githubusercontent.com/delta-reporter/delta-reporter-wdio/master/src/docs/delta-reporter.png)
 
 
 ## Installation
@@ -17,7 +17,7 @@ The easiest way is to keep `@delta-reporter/wdio-delta-reporter-service` as a de
 ```json
 {
   "devDependencies": {
-    "@delta-reporter/wdio-delta-reporter-service": "^1.1.1",
+    "@delta-reporter/wdio-delta-reporter-service": "^1.1.3",
   }
 }
 ```
@@ -181,3 +181,29 @@ Below is an example of code for config file for Jenkins job:
     }  
   }
 ```
+
+## Sending extra data to Delta Reporter
+
+Its possible to send custom data to be displayed into Delta Reporter using the SmartLinks feature.
+
+For this use the commands `browser.sendDataToTest` or `sendDataToTestRun`, depending on the place where you want to show this information
+
+These methods accept a jsonify object as argument
+
+Example of integration with [Spectre](https://github.com/wearefriday/spectre)
+
+```ts
+  beforeSuite() {
+    try {
+      let spectreTestRunURL = fs.readFileSync('./.spectre_test_run_url.json');
+      let test_run_payload = {
+        spectre_test_run_url: spectreTestRunURL.toString()
+      };
+      browser.sendDataToTestRun(test_run_payload);
+    } catch {
+      log.info('No Spectre URL found');
+    }
+  }
+```
+
+Then on Delta Reporter, a SmartLink with `{spectre_test_run_url}` can be created for the test run
