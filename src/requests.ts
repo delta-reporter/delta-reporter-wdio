@@ -99,6 +99,16 @@ class DeltaRequests {
     return this.restClient.update(url, data);
   }
 
+  sendDataTest(test_id: number, data: any) {
+    const url = ['api/v1/test_data/' + test_id];
+    return this.restClient.update(url, data);
+  }
+
+  sendDataTestRun(test_run_id: number, data: any) {
+    const url = ['api/v1/test_run_data/' + test_run_id];
+    return this.restClient.update(url, data);
+  }
+
   sendFile(test_history_id: number, type: string, file: any, description?: string) {
     if (this.supportedFileTypes.includes(type)) {
       const url = ['api/v1/file_receiver_test_history/' + test_history_id];

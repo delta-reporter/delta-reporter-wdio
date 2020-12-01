@@ -17,6 +17,7 @@ function getLatestFile({ directory, extension }, callback) {
 }
 
 let delta_config = {
+  enabled: true,
   host: 'http://localhost:5000',
   project: 'Delta Reporter',
   testType: 'End to End'
@@ -82,6 +83,17 @@ exports.config = {
       getLatestFile({ directory: browser.options.outputDir + '/_results_', extension: 'mp4' }, (filename = null) => {
         browser.sendFileToTest('video', filename, 'Video captured during test execution');
       });
+    }
+  },
+  beforeSuite() {
+    try {
+      let spectreTestRunURL = fs.readFileSync('./.spectre_test_run_url.json');
+      let test_run_payload = {
+        spectre_test_run_url: spectreTestRunURL.toString()
+      };
+      browser.sendDataToTestRun(test_run_payload);
+    } catch {
+      log.info('No Spectre URL found');
     }
   }
 };
