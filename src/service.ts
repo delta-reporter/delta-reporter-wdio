@@ -21,6 +21,8 @@ class DeltaService {
   async onPrepare(config, capabilities) {
     log.setLevel(config.logLevel || 'info');
 
+    if (!this.options.enabled) return;
+
     rimraf.sync('./.delta_service');
     fs.mkdirSync('./.delta_service');
 
@@ -47,6 +49,7 @@ class DeltaService {
 
     let test_run = {
       test_type: this.options.testType,
+      environment: config.baseUrl,
       launch_id: launchId,
       start_datetime: new Date()
     };
@@ -57,6 +60,7 @@ class DeltaService {
   }
 
   async before(capabilities, specs) {
+    if (!this.options.enabled) return;
     browser.addCommand('sendFileToTest', async (type, file, description?) => {
       try {
         let response = await this.requests.sendFile(
@@ -67,29 +71,36 @@ class DeltaService {
         );
         log.info(response);
       } catch (e) {
-        console.error(e);
+        log.error(e);
+      }
+    });
+
+    browser.addCommand('sendDataToTest', async data => {
+      try {
+        let payload = { data: data };
+        let response = await this.requests.sendDataTest(this.delta_test.test_history_id, payload);
+        log.info(response);
+      } catch (e) {
+        log.error(e);
+      }
+    });
+
+    browser.addCommand('sendDataToTestRun', async data => {
+      try {
+        let payload = { data: data };
+        const testRun = JSON.parse(fs.readFileSync('./.delta_service/testRun.json'));
+        let response = await this.requests.sendDataTestRun(testRun.id, payload);
+        log.info(response);
+      } catch (e) {
+        log.error(e);
       }
     });
   }
 
   async beforeSuite(suite) {
+    if (!this.options.enabled) return;
     const testRun = JSON.parse(fs.readFileSync('./.delta_service/testRun.json'));
     let response: any;
-    try {
-      let spectreTestRunURL = fs.readFileSync('./.spectre_test_run_url.json');
-      log.info(`Spectre URL: ${spectreTestRunURL}`);
-      let test_run_payload = {
-        test_run_id: testRun.id,
-        data: {
-          spectre_test_run_url: spectreTestRunURL.toString()
-        }
-      };
-      response = await this.requests.updateTestRun(test_run_payload);
-      log.info(response);
-    } catch {
-      log.info('No Spectre URL found');
-    }
-
     let test_run_suite = {
       name: suite.title,
       test_type: this.options.testType,
@@ -106,6 +117,7 @@ class DeltaService {
   }
 
   async beforeTest(test, context) {
+    if (!this.options.enabled) return;
     const testRun = JSON.parse(fs.readFileSync('./.delta_service/testRun.json'));
 
     let test_history = {
@@ -123,6 +135,7 @@ class DeltaService {
   }
 
   async afterTest(test, context, { error, result, duration, passed, retries }) {
+    if (!this.options.enabled) return;
     let test_history = {
       test_history_id: this.delta_test.test_history_id,
       end_datetime: new Date(),
@@ -138,6 +151,7 @@ class DeltaService {
   }
 
   async afterSuite(suite) {
+    if (!this.options.enabled) return;
     let test_suite_history = {
       test_suite_history_id: this.delta_test_suite.test_suite_history_id,
       end_datetime: new Date(),
@@ -151,6 +165,7 @@ class DeltaService {
   }
 
   async onComplete(exitCode, config, capabilities, results) {
+    if (!this.options.enabled) return;
     const testRun = JSON.parse(fs.readFileSync('./.delta_service/testRun.json'));
     let launch;
     let response: any;
