@@ -39,6 +39,7 @@ const DeltaReporter = require('@delta-reporter/wdio-delta-reporter-service/lib/s
 const DeltaService = require("@delta-reporter/wdio-delta-reporter-service");
 
 let delta_config = {
+  enabled: true,
   host: 'delta_host',
   project: 'Project Name',
   testType: 'Test Type'
@@ -106,6 +107,7 @@ function getLatestFile({ directory, extension }, callback) {
 }
 
 let delta_config = {
+  enabled: true,
   host: 'delta_host', // put your Delta Core url here
   project: 'Project Name', // Name of your project
   testType: 'Test Type' // eg., End to End, E2E, Frontend Acceptance Tests
