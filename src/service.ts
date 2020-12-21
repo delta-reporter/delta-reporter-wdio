@@ -112,7 +112,7 @@ class DeltaService {
     response = await this.requests.createTestSuiteHistory(test_run_suite);
     fs.writeFileSync(path.resolve(`./.delta_service/${suite.title.replace(/ /g, '-')}.json`), JSON.stringify(response));
     log.info(`Test file ${suite.title.replace(/ /g, '-')}.json written`);
-    this.delta_test_suite = response;
+    this.delta_test_suite[suite.title] = response;
     log.info(response);
   }
 
@@ -152,8 +152,9 @@ class DeltaService {
 
   async afterSuite(suite) {
     if (!this.options.enabled) return;
+
     let test_suite_history = {
-      test_suite_history_id: this.delta_test_suite.test_suite_history_id,
+      test_suite_history_id: this.delta_test_suite[suite.title].test_suite_history_id,
       end_datetime: new Date(),
       test_suite_status: suite.error ? 'Failed' : 'Successful',
       data: {
