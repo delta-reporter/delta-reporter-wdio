@@ -10,7 +10,7 @@ class DeltaService {
   restClient: any;
   options: any;
   delta_test: any;
-  delta_test_suite: any;
+  delta_test_suite: any = {};
   requests: any;
 
   constructor(options) {
@@ -123,9 +123,9 @@ class DeltaService {
     let test_history = {
       name: test.title,
       start_datetime: new Date(),
-      test_suite_id: this.delta_test_suite.test_suite_id,
+      test_suite_id: this.delta_test_suite[test.parent].test_suite_id,
       test_run_id: testRun.id,
-      test_suite_history_id: this.delta_test_suite.test_suite_history_id
+      test_suite_history_id: this.delta_test_suite[test.parent].test_suite_history_id
     };
 
     let response = await this.requests.createTestHistory(test_history);
