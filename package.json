@@ -1,6 +1,6 @@
 {
   "name": "@delta-reporter/wdio-delta-reporter-service",
-  "version": "1.1.5",
+  "version": "1.1.7",
   "description": "Delta Reporter service for WebdriverIO",
   "main": "lib/src/service.js",
   "files": [
@@ -36,9 +36,9 @@
   "author": "Juan Negrier <juannegrier@gmail.com>",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@types/chai": "^4.2.7",
+    "@types/chai": "^4.2.14",
     "@types/mocha": "^5.2.7",
-    "@types/node": "^10.17.26",
+    "@types/node": "^14.14.19",
     "@wdio/cli": "^5.23.0",
     "@wdio/dot-reporter": "^5.22.4",
     "@wdio/local-runner": "^5.23.0",
@@ -47,24 +47,24 @@
     "@wdio/spec-reporter": "^5.23.0",
     "@wdio/sync": "^5.23.0",
     "chai": "^4.2.0",
+    "husky": "^5.0.6",
     "lint-staged": "^8.1.7",
     "mocha": "^5.2.0",
     "prettier": "^1.17.1",
-    "rimraf": "^3.0.2",
     "ts-node": "^7.0.1",
     "tsconfig-paths": "^3.9.0",
     "tslint": "^5.16.0",
-    "typescript": "^3.9.5",
+    "typescript": "^3.9.7",
     "wdio-docker-service": "^2.4.0",
+    "wdio-video-reporter": "^3.1.1",
     "webdriverio": "^5.23.0"
   },
   "dependencies": {
     "axios": "^0.19.2",
-    "axios-retry": "^3.1.8",
-    "husky": "^3.0.8",
-    "uniqid": "^5.2.0",
-    "wdio-mocha-framework": "^0.6.4",
-    "wdio-video-reporter": "^3.0.0"
+    "axios-retry": "^3.1.9",
+    "form-data": "^3.0.0",
+    "rimraf": "^3.0.2",
+    "save-dev": "0.0.1-security"
   },
   "homepage": "https://github.com/delta-reporter/wdio-delta-reporter-service#readme",
   "directories": {
