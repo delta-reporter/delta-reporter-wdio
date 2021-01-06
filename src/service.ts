@@ -112,7 +112,8 @@ class DeltaService {
     response = await this.requests.createTestSuiteHistory(test_run_suite);
     fs.writeFileSync(path.resolve(`./.delta_service/${suite.title.replace(/ /g, '-')}.json`), JSON.stringify(response));
     log.info(`Test file ${suite.title.replace(/ /g, '-')}.json written`);
-    this.delta_test_suite[suite.title] = response;
+    this.delta_test_suite[suite.file] = response;
+    this.delta_test_suite[suite.file].title = suite.title
     log.info(response);
   }
 
@@ -120,12 +121,16 @@ class DeltaService {
     if (!this.options.enabled) return;
     const testRun = JSON.parse(fs.readFileSync('./.delta_service/testRun.json'));
 
+    let test_title = test.title
+    if (test.parent != this.delta_test_suite[test.file].title)
+      test_title = `${test.parent} ${test.title}`;
+
     let test_history = {
-      name: test.title,
+      name: test_title,
       start_datetime: new Date(),
-      test_suite_id: this.delta_test_suite[test.parent].test_suite_id,
+      test_suite_id: this.delta_test_suite[test.file].test_suite_id,
       test_run_id: testRun.id,
-      test_suite_history_id: this.delta_test_suite[test.parent].test_suite_history_id
+      test_suite_history_id: this.delta_test_suite[test.file].test_suite_history_id
     };
 
     let response = await this.requests.createTestHistory(test_history);
@@ -154,8 +159,9 @@ class DeltaService {
     if (!this.options.enabled) return;
 
     let test_suite_history = {
-      test_suite_history_id: this.delta_test_suite[suite.title].test_suite_history_id,
+      test_suite_history_id: this.delta_test_suite[suite.file].test_suite_history_id,
       end_datetime: new Date(),
+      // TODO: suite.error doesn't return nothing, other way to set failed suite is needed
       test_suite_status: suite.error ? 'Failed' : 'Successful',
       data: {
         file: suite.file
