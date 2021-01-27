@@ -17,7 +17,7 @@ The easiest way is to keep `@delta-reporter/wdio-delta-reporter-service` as a de
 ```json
 {
   "devDependencies": {
-    "@delta-reporter/wdio-delta-reporter-service": "^1.1.3",
+    "@delta-reporter/wdio-delta-reporter-service": "^1.1.9",
   }
 }
 ```
@@ -209,3 +209,5 @@ Example of integration with [Spectre](https://github.com/wearefriday/spectre)
 ```
 
 Then on Delta Reporter, a SmartLink with `{spectre_test_run_url}` can be created for the test run
+
+For more information about Smart Links, please check [Delta Reporter docs](https://delta-reporter.github.io/delta-reporter/main_features/#smart-links)
